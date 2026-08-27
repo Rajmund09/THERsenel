@@ -1,0 +1,24 @@
+# Model Architecture Configuration for RGB + Thermal Fusion Detection
+
+architecture:
+  type: "fusion_yolov8"
+  backbone_rgb: "yolov8n"
+  backbone_thermal: "yolov8n"
+  fusion_type: "mid_fusion" # options: early_fusion, mid_fusion, late_fusion
+  fusion_channels: 256
+  num_classes: 80
+
+input:
+  img_size: 640
+  channels_rgb: 3
+  channels_thermal: 3
+
+training:
+  epochs: 50
+  batch_size: 16
+  lr0: 0.01
+  lrf: 0.01
+  momentum: 0.937
+  weight_decay: 0.0005
+  warmup_epochs: 3.0
+  device: 0  # GPU id or 'cpu'

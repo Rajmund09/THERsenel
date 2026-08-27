@@ -1,0 +1,17 @@
+# Real-Time & Jetson Xavier Deployment Configuration
+
+target_device: "NVIDIA Jetson Xavier"
+export_format: "onnx" # options: onnx, engine (TensorRT)
+precision: "fp16"     # options: fp32, fp16, int8
+
+inference:
+  img_size: [640, 640]
+  conf_threshold: 0.25
+  iou_threshold: 0.45
+  max_det: 300
+
+intrusion_detection:
+  roi_polygon: [[100, 400], [540, 400], [600, 600], [40, 600]]
+  restricted_classes: ["person", "car", "motor", "bus", "truck"]
+  alert_cooldown_seconds: 5.0
+  enable_visual_overlay: true
