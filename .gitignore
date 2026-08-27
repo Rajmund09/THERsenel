@@ -1,0 +1,29 @@
+# Data
+data/raw/
+data/processed/
+*.jpg
+*.jpeg
+*.png
+!data/samples/**
+
+# Weights / checkpoints
+weights/**/*.pt
+weights/**/*.onnx
+weights/**/*.engine
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+*.egg-info/
+.env
+venv/
+.venv/
+
+# Logs
+runs/
+logs/
+*.log
+
+# OS
+.DS_Store
