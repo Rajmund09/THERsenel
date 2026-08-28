@@ -1,17 +1,24 @@
-# Real-Time & Jetson Xavier Deployment Configuration
+# Deployment Configuration for NVIDIA Jetson Xavier
 
-target_device: "NVIDIA Jetson Xavier"
-export_format: "onnx" # options: onnx, engine (TensorRT)
-precision: "fp16"     # options: fp32, fp16, int8
+deployment:
+  target: "jetson_xavier"
+  precision: "fp16"           # fp32, fp16, int8
+  workspace_size: 1 << 30     # 1GB TensorRT workspace size
+  onnx_opset: 17
 
 inference:
-  img_size: [640, 640]
-  conf_threshold: 0.25
-  iou_threshold: 0.45
-  max_det: 300
+  source_rgb: "data/raw/FLIR/rgb"
+  source_thermal: "data/raw/FLIR/thermal"
+  fps_limit: 30
+  enable_display: true
+  save_output: true
+  output_path: "logs/inference_output.avi"
 
-intrusion_detection:
-  roi_polygon: [[100, 400], [540, 400], [600, 600], [40, 600]]
-  restricted_classes: ["person", "car", "motor", "bus", "truck"]
-  alert_cooldown_seconds: 5.0
-  enable_visual_overlay: true
+alert_system:
+  restricted_roi:             # Normalized polygon coordinates [(x1,y1), (x2,y2), ...] defining the restricted border area
+    - [0.1, 0.4]
+    - [0.9, 0.4]
+    - [0.9, 0.9]
+    - [0.1, 0.9]
+  min_alert_frames: 3         # Require 3 consecutive frames of intrusion detection before triggering alert
+  alert_cooldown_seconds: 5   # Cooldown between consecutive alerts
