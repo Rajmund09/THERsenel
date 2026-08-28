@@ -1,6 +1,8 @@
 # Data
-data/raw/
-data/processed/
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/**/.gitkeep
 *.jpg
 *.jpeg
 *.png
@@ -22,7 +24,8 @@ venv/
 
 # Logs
 runs/
-logs/
+logs/*
+!logs/.gitkeep
 *.log
 
 # OS

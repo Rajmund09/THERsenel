@@ -1,0 +1,28 @@
+name: thermal-border
+channels:
+  - pytorch
+  - nvidia
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pytorch>=2.1.0
+  - torchvision>=0.16.0
+  - pytorch-cuda=12.1
+  - numpy>=1.26.0
+  - pandas>=2.1.0
+  - matplotlib>=3.8.0
+  - scipy>=1.12.0
+  - pyyaml>=6.0.1
+  - tqdm>=4.66.0
+  - pip
+  - pip:
+      - ultralytics>=8.1.0
+      - opencv-python>=4.9.0
+      - seaborn>=0.13.0
+      - tensorboard>=2.15.0
+      - scikit-learn>=1.4.0
+      - onnx>=1.15.0
+      - onnxruntime>=1.17.0
+      - albumentations>=1.4.0
+      - jupyter>=1.0.0
