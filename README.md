@@ -1,75 +1,178 @@
 # Thermal-Border-Intrusion
 
-Automated border intrusion detection using RGB + thermal image fusion and YOLOv8,
-deployed on NVIDIA Jetson Xavier.
+Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion and YOLOv8, Deployed on NVIDIA Jetson Xavier.
 
-## Project story (research questions)
+---
 
-1. Does thermal imagery improve detection compared with RGB alone?
-2. Does RGB + thermal fusion outperform either modality alone?
-3. Does fusion provide greater benefit under low-light conditions?
-4. Can the fusion detector hit practical inference speed on Jetson Xavier?
+## 🎯 Research Objectives & Questions
 
-## Milestones
+1. **RGB vs. Thermal**: Does thermal infrared imagery improve object detection accuracy compared to RGB imagery alone?
+2. **Multimodal Fusion**: Does Spatial Attention RGB + Thermal fusion outperform single-modality baselines?
+3. **Environmental Visibility**: Does fusion provide a larger performance gain under low-light/night conditions compared to daylight?
+4. **Edge Deployment**: Can the dual-stream fusion detector achieve real-time inference (>30 FPS) when deployed on NVIDIA Jetson Xavier?
 
-| # | Deliverable |
-|---|---|
-| M1 | Environment + Git project |
-| M2 | FLIR dataset prepared |
-| M3 | RGB YOLOv8 baseline |
-| M4 | Thermal YOLOv8 baseline |
-| M5 | Fusion CNN |
-| M6 | Fusion + YOLOv8 |
-| M7 | Evaluation + comparison |
-| M8 | Intrusion / ROI / tracking |
-| M9 | Real-time application |
-| M10 | Jetson Xavier deployment |
+---
 
-## Setup
+## 🚀 Development Milestones
 
-```bash
-# 1. Create environment
-conda create -n thermal-border python=3.11 -y
-conda activate thermal-border
+| Milestone | Deliverable Description | Status |
+|---|---|---|
+| **M1** | Environment setup, Git repository, and professional project structure | ✅ Completed |
+| **M2** | FLIR ADAS dataset exploration, homography alignment, & YOLO preprocessing | ✅ Modules Ready |
+| **M3** | RGB-only YOLOv8 baseline model training & metrics | ⏳ Pending Dataset |
+| **M4** | Thermal-only YOLOv8 baseline model training & metrics | ⏳ Pending Dataset |
+| **M5** | PyTorch Dual-Stream Spatial Attention Fusion CNN network implementation | ✅ Completed |
+| **M6** | End-to-end YOLOv8 + Fusion integration & loss functions | ✅ Completed |
+| **M7** | Scientific evaluation & Day vs. Night comparative mAP benchmarking | ✅ Modules Ready |
+| **M8** | Polygon ROI definition & ByteTrack multi-object tracking integration | ✅ Completed |
+| **M9** | Real-time dual-video/camera intrusion inference application | ✅ Completed |
+| **M10** | ONNX export, TensorRT FP16 optimization, & Jetson Xavier benchmarking | ⏳ Pending Deployment |
 
-# 2. Install PyTorch with CUDA (check pytorch.org for your CUDA version, example below is CUDA 12.1)
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+---
 
-# 3. Install the rest
-pip install -r requirements.txt
-
-# 4. Verify
-python -c "import torch; print('CUDA available:', torch.cuda.is_available())"
-python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
-```
-
-## Getting the dataset
-
-1. Download the FLIR ADAS / thermal dataset (Teledyne FLIR site, or Kaggle mirror).
-2. Extract it, unmodified, into `data/raw/FLIR/`.
-3. Never edit files in `data/raw/` directly — all processing writes to `data/processed/`.
-
-## Folder structure
+## 🏗️ Professional Project Architecture
 
 ```
 thermal-border-intrusion/
-├── configs/            # dataset.yaml, model.yaml, deployment.yaml
-├── data/
-│   ├── raw/FLIR/        # untouched original dataset
-│   ├── processed/       # train/val/test after preprocessing
-│   └── samples/         # a few images for quick sanity checks
-├── notebooks/           # exploration & experiment notebooks
-├── src/
-│   ├── data/            # dataset loading, preprocessing, alignment, augmentation
-│   ├── models/           # rgb_encoder, thermal_encoder, fusion, detector
-│   ├── training/         # train_rgb.py, train_thermal.py, train_fusion.py
-│   ├── evaluation/       # metrics, comparison plots
-│   ├── inference/        # image/video/camera inference
-│   └── intrusion/        # ROI, tracker, alert logic
-└── weights/              # saved model checkpoints (rgb / thermal / fusion)
+├── configs/                  # YAML configurations
+│   ├── dataset.yaml          # YOLO dataset paths & class labels
+│   ├── model.yaml            # ResNet-18 dual encoders, Spatial Attention Fusion params
+│   └── deployment.yaml       # Jetson Xavier TensorRT params & ROI border polygon
+├── data/                     # Dataset storage
+│   ├── raw/FLIR/             # Original untouched FLIR ADAS dataset
+│   ├── processed/            # Preprocessed train/val/test splits (YOLO format)
+│   └── samples/              # Preview image grids for sanity checks
+├── notebooks/                # Jupyter exploration & experiment notebooks
+│   ├── 01_dataset_exploration.ipynb
+│   ├── 02_preprocessing.ipynb
+│   ├── 03_rgb_baseline.ipynb
+│   ├── 04_thermal_baseline.ipynb
+│   ├── 05_fusion_experiments.ipynb
+│   └── 06_evaluation.ipynb
+├── src/                      # Core Source Code Package
+│   ├── data/                 # Dataset loader, alignment, augmentation, & exploration
+│   │   ├── dataset.py        # PyTorch Multimodal RGBThermalDataset loader
+│   │   ├── alignment.py      # RGB-Thermal homography registration
+│   │   ├── augmentation.py   # Synchronized Albumentations pipeline
+│   │   ├── explore_dataset.py# Raw FLIR scanning & summary generator
+│   │   └── preprocessing.py  # COCO JSON to YOLO format converter
+│   ├── models/               # Neural network architectures
+│   │   ├── rgb_encoder.py    # ResNet-style RGB feature encoder
+│   │   ├── thermal_encoder.py# ResNet-style Thermal feature encoder
+│   │   ├── fusion_model.py   # SpatialAttentionFusion & RGBThermalFusionDetector
+│   │   ├── detector.py       # Decoupled Object Detection Head
+│   │   └── fusion_yolov8.py  # Dual-stream YOLOv8 spatial fusion wrapper
+│   ├── training/             # Model training pipelines & loss functions
+│   │   ├── train_rgb.py      # Baseline RGB YOLOv8 training script
+│   │   ├── train_thermal.py  # Baseline Thermal YOLOv8 training script
+│   │   ├── train_fusion.py   # End-to-end PyTorch Fusion training script
+│   │   └── losses.py         # CIoU loss & BCE classification loss
+│   ├── evaluation/           # Evaluation metrics & visualization
+│   │   ├── evaluate_models.py# Model evaluation & comparative benchmark suite
+│   │   ├── metrics.py        # IoU, AP, mAP@50, Precision, & Recall calculation
+│   │   └── visualization.py  # Plotting comparative charts & detection overlays
+│   ├── inference/            # Real-time inference engines
+│   │   ├── predict.py        # Single image / frame real-time inference launcher
+│   │   ├── video.py          # Dual video file stream processing engine
+│   │   └── camera.py         # Live Webcam / RTSP / Jetson CSI camera reader
+│   └── intrusion/            # Security border intrusion logic
+│       ├── border_tracker.py # Ray-Casting algorithm for polygon border breach test
+│       ├── roi.py            # ROI polygon manager & overlay painter
+│       ├── tracker.py        # Multi-Object Tracker ID assigner
+│       └── alert.py          # Event logging, audio/visual alarm dispatcher
+├── weights/                  # Saved checkpoint weights (.pt, .onnx, .engine)
+│   ├── rgb/
+│   ├── thermal/
+│   └── fusion/
+├── logs/                     # TensorBoard logs & intrusion event logs
+├── PROJECT_STATUS.md         # Full project status & phase tracking document
+├── setup.py                  # Package installation configuration
+├── environment.yml           # Conda environment definition file
+├── requirements.txt          # Pip dependencies specification file
+└── README.md                 # Project documentation
 ```
 
-## Next step
+---
 
-Run `src/data/explore_dataset.py` after placing the dataset in `data/raw/FLIR/`
-to get counts, class distribution, and RGB/thermal sample pairs (M2).
+## ⚙️ Environment Setup & Installation
+
+### Option A: Conda Environment (Recommended)
+
+```bash
+# 1. Create and activate conda environment
+conda env create -f environment.yml
+conda activate thermal-border
+
+# 2. Install editable package
+pip install -e .
+```
+
+### Option B: Pip Virtual Environment
+
+```bash
+# 1. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 2. Install PyTorch with CUDA support (Example for CUDA 12.1)
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+
+# 3. Install requirements and package
+pip install -r requirements.txt
+pip install -e .
+```
+
+---
+
+## 🏃 Usage Commands
+
+### 1. Dataset Exploration & Preprocessing (Milestone M2)
+Place original FLIR ADAS files into `data/raw/FLIR/` and run:
+
+```bash
+# Explore dataset counts & resolutions
+python src/data/explore_dataset.py
+
+# Convert COCO JSON annotations to YOLO format under data/processed/
+python src/data/preprocessing.py
+```
+
+### 2. Single-Modality Baseline Model Training (Milestones M3 & M4)
+
+```bash
+# Train RGB YOLOv8 baseline
+python src/training/train_rgb.py --epochs 50 --batch 16
+
+# Train Thermal YOLOv8 baseline
+python src/training/train_thermal.py --epochs 50 --batch 16
+```
+
+### 3. Dual-Stream Spatial Attention Fusion Training (Milestones M5 & M6)
+
+```bash
+# Train Spatial Attention RGB+Thermal Fusion Detector
+python src/training/train_fusion.py --epochs 50 --batch 16 --lr 0.001
+```
+
+### 4. Scientific Evaluation & Benchmarking (Milestone M7)
+
+```bash
+# Run comparative evaluation suite across Day vs. Night scenarios
+python src/evaluation/evaluate_models.py
+```
+
+### 5. Real-Time Intrusion Detection & Application (Milestones M8 & M9)
+
+```bash
+# Run real-time detection & ROI border tracking engine
+python src/inference/predict.py
+```
+
+---
+
+## 📌 Citation & References
+
+- Teledyne FLIR ADAS Thermal Dataset
+- Ultralytics YOLOv8 Architecture
+- PyTorch Deep Learning Framework
+- NVIDIA TensorRT & Jetson Xavier Platform
