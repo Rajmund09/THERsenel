@@ -53,15 +53,28 @@ def convert_coco_bbox_to_yolo(bbox: List[float], img_width: int, img_height: int
     )
 
 
+def resolve_image_path(split_dir: Path, file_name: str) -> Path | None:
+    """Find the exact source image path across potential FLIR layout conventions."""
+    candidates = [
+        split_dir / file_name,
+        split_dir / "data" / Path(file_name).name,
+        split_dir / Path(file_name).name,
+        split_dir / "data" / file_name,
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+    return None
+
+
 def process_coco_split(split_dir: Path, output_split: str, modality: str = "rgb"):
     """
     Process a single FLIR COCO split directory (e.g. images_rgb_train) into data/processed/.
     """
     coco_json_path = split_dir / "coco.json"
-    images_dir = split_dir / "data"
 
-    if not coco_json_path.exists() or not images_dir.exists():
-        print(f"[!] Skipping {split_dir.name}: missing coco.json or data/ folder")
+    if not coco_json_path.exists():
+        print(f"[!] Skipping {split_dir.name}: missing coco.json")
         return
 
     print(f"[+] Processing {split_dir.name} ({modality}) -> {output_split}...")
@@ -88,13 +101,13 @@ def process_coco_split(split_dir: Path, output_split: str, modality: str = "rgb"
     processed_count = 0
     for img_id, img_meta in tqdm(images_info.items(), desc=f"Converting {split_dir.name}"):
         file_name = img_meta["file_name"]
-        src_img_path = images_dir / file_name
+        src_img_path = resolve_image_path(split_dir, file_name)
 
-        if not src_img_path.exists():
+        if src_img_path is None:
             continue
 
-        width = img_meta["width"]
-        height = img_meta["height"]
+        width = img_meta.get("width", 640)
+        height = img_meta.get("height", 480)
 
         # Prefix filename with modality and split for uniqueness
         new_base_name = f"{modality}_{split_dir.name}_{Path(file_name).stem}"
