@@ -51,6 +51,13 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
   - Total **30,787 preprocessed images and labels** written to [`data/processed/`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/data/processed/).
   - Generated `labels.cache` for instant sub-millisecond dataset loading.
 
+<p align="center">
+  <img src="data/samples/rgb_thermal_preview.png" alt="FLIR Thermal and RGB Multimodal Dataset Grid" width="95%" />
+</p>
+<p align="center">
+  <em>Figure 1: Synchronized FLIR Visual (RGB) and Thermal Infrared Pair Samples from the Preprocessed Dataset.</em>
+</p>
+
 ---
 
 ### 📅 Phase 3: Hardware Acceleration & CUDA PyTorch Migration (Aug 29, 2026 @ 18:18 PM)
@@ -88,6 +95,21 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 
 - **Real-Time Speed**: `0.3ms preprocess, 3.5ms inference, 1.0ms postprocess` ($\approx$ **285 FPS**).
 
+<p align="center">
+  <img src="data/samples/rgb_baseline_results.png" alt="RGB Baseline 50-Epoch Training Metrics & Loss Curves" width="48%" />
+  <img src="data/samples/rgb_baseline_pr_curve.png" alt="Precision-Recall Curve" width="48%" />
+</p>
+<p align="center">
+  <em>Figure 2: (Left) 50-Epoch Training Loss & mAP Convergence Curves. (Right) Class-wise Precision-Recall (PR) Curve on RGB Visual Validation Set.</em>
+</p>
+
+<p align="center">
+  <img src="data/samples/rgb_baseline_detections.jpg" alt="RGB Baseline Model Detection Predictions" width="95%" />
+</p>
+<p align="center">
+  <em>Figure 3: RGB Baseline Model Sample Validation Object Detections (Person, Car, Bus, Motorcycle bounding boxes).</em>
+</p>
+
 ---
 
 ## 🏗️ Professional Project Architecture
@@ -101,7 +123,11 @@ thermal-border-intrusion/
 ├── data/                     # Dataset storage
 │   ├── raw/FLIR/             # Original untouched FLIR ADAS dataset
 │   ├── processed/            # Preprocessed train/val/test splits (YOLO format)
-│   └── samples/              # Preview image grids for sanity checks
+│   └── samples/              # Preview image grids & training result plots
+│       ├── rgb_thermal_preview.png
+│       ├── rgb_baseline_results.png
+│       ├── rgb_baseline_pr_curve.png
+│       └── rgb_baseline_detections.jpg
 ├── notebooks/                # Jupyter exploration & experiment notebooks
 │   ├── 01_dataset_exploration.ipynb
 │   ├── 02_preprocessing.ipynb
