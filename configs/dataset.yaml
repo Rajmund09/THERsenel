@@ -1,15 +1,12 @@
-# YOLO-style dataset config
-# Fill in the real paths once data/processed/ is populated (after preprocessing).
-# 'names' should match whatever classes actually exist in the FLIR annotations —
-# update this after running src/data/explore_dataset.py.
-
-path: ../data/processed   # dataset root, relative to this file
-train: train/images
-val: val/images
-test: test/images
-
 names:
   0: person
   1: bicycle
   2: car
-  # add/remove classes here once you've confirmed them against the FLIR annotation files
+  3: motorcycle
+  4: bus
+  5: truck
+  6: rider
+path: C:\Users\prabh\Downloads\thermal-border-intrusion\thermal-border-intrusion\data\processed
+test: test/images
+train: train/images
+val: val/images
