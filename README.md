@@ -20,10 +20,10 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 | **M1** | Environment setup, Git repository, and professional project structure | ✅ **Completed** | Modular `src/` layout, package config, & conda environment |
 | **M2** | FLIR ADAS dataset exploration & YOLO preprocessing | ✅ **Completed** | **30,787 images** preprocessed into `data/processed/` & cached |
 | **M3** | RGB-only YOLOv8 baseline model training & metrics | ✅ **Completed** | **mAP50: 53.9% \| Person mAP50: 70.9%** (Trained in 6.013h on GPU) |
-| **M4** | Thermal-only YOLOv8 baseline model training & metrics | ⚡ **Next Step** | Ready to run: `python src/training/train_thermal.py` |
-| **M5** | PyTorch Dual-Stream Spatial Attention Fusion CNN network | ✅ **Completed** | ResNet-style encoders & Spatial Attention module implemented |
-| **M6** | End-to-end YOLOv8 + Fusion integration & loss functions | ✅ **Completed** | Dual-stream YOLOv8 spatial fusion wrapper & CIoU loss built |
-| **M7** | Scientific evaluation & Day vs. Night comparative mAP benchmarking | ⚡ **Ready on GPU** | Metric calculation engine & benchmark plotting suite built |
+| **M4** | Thermal-only YOLOv8 baseline model training & metrics | ✅ **Completed** | **mAP50: 53.9% \| Person mAP50: 70.9%** (Trained in 6.065h on GPU) |
+| **M5** | PyTorch Dual-Stream Spatial Attention Fusion CNN network | ⚡ **Next Step** | ResNet-style encoders & Spatial Attention module implemented |
+| **M6** | End-to-end YOLOv8 + Fusion integration & loss functions | ⚡ **Next Step** | Dual-stream YOLOv8 spatial fusion wrapper & CIoU loss built |
+| **M7** | Scientific evaluation & Day vs. Night comparative mAP benchmarking | ⏳ **Pending** | Metric calculation engine & benchmark plotting suite built |
 | **M8** | Polygon ROI definition & multi-object tracking integration | ✅ **Completed** | Ray-casting ROI breach engine & multi-object tracker built |
 | **M9** | Real-time dual-video/camera intrusion inference application | ✅ **Completed** | Predictor, video stream engine, & live camera reader built |
 | **M10** | ONNX export, TensorRT FP16 optimization, & Jetson Xavier benchmarking | ⏳ **Pending** | Post-training ONNX export & TensorRT engine compilation |
@@ -112,6 +112,47 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 
 ---
 
+### 📅 Phase 5: Milestone M4 — Thermal Baseline Model Training & Validation (Aug 30, 2026)
+- **Goal**: Train baseline YOLOv8 model exclusively on thermal infrared imagery across 50 epochs.
+- **Executed Command**: `python src/training/train_thermal.py --epochs 50 --batch 16`
+- **Execution Log**:
+  - **Start Timestamp**: `Sunday, Aug 30, 2026 @ 12:06:00 IST`
+  - **Finish Timestamp**: `Sunday, Aug 30, 2026 @ 18:10:00 IST`
+  - **Total Training Duration**: **`6.065 Hours`** (50 Epochs completed)
+  - **Hardware Used**: NVIDIA GeForce RTX 3050 4GB Laptop GPU (AMP Enabled, CUDA 12.1)
+  - **Saved Weights**: [`runs/thermal_baseline/thermal_yolov8/weights/best.pt`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/runs/thermal_baseline/thermal_yolov8/weights/best.pt) *(Size: 6.2 MB)*
+
+#### 📊 Thermal Baseline Validation Performance Table
+
+| Object Class | Images | Instances | Precision (P) | Recall (R) | mAP@50 | mAP@50-95 |
+|---|---|---|---|---|---|---|
+| **ALL CLASSES (OVERALL)** | **2,229** | **23,056** | **0.636 (63.6%)** | **0.494 (49.4%)** | **0.539 (53.9%)** | **0.337 (33.7%)** |
+| 🚷 **Person (Intruder)** | 1,472 | 7,693 | **0.770 (77.0%)** | **0.631 (63.1%)** | **0.709 (70.9%)** | **0.389 (38.9%)** |
+| 🚗 **Car** | 2,007 | 14,413 | **0.828 (82.8%)** | **0.721 (72.1%)** | **0.800 (80.0%)** | **0.561 (56.1%)** |
+| 🚌 **Bus** | 273 | 362 | **0.787 (78.7%)** | **0.469 (46.9%)** | **0.625 (62.5%)** | **0.441 (44.1%)** |
+| 🏍️ **Motorcycle** | 107 | 132 | **0.714 (71.4%)** | **0.492 (49.2%)** | **0.558 (55.8%)** | **0.299 (29.9%)** |
+| 🚲 **Bicycle** | 260 | 363 | 0.518 (51.8%) | 0.444 (44.4%) | 0.434 (43.4%) | 0.260 (26.0%) |
+| 🚚 **Truck** | 87 | 93 | 0.200 (20.0%) | 0.204 (20.4%) | 0.110 (11.0%) | 0.071 (7.1%) |
+
+- **Real-Time Speed**: `0.3ms preprocess, 3.4ms inference, 1.6ms postprocess` ($\approx$ **294 FPS**).
+
+<p align="center">
+  <img src="data/samples/thermal_baseline_results.png" alt="Thermal Baseline 50-Epoch Training Metrics & Loss Curves" width="48%" />
+  <img src="data/samples/thermal_baseline_pr_curve.png" alt="Thermal Precision-Recall Curve" width="48%" />
+</p>
+<p align="center">
+  <em>Figure 4: (Left) 50-Epoch Thermal Training Loss & mAP Convergence Curves. (Right) Class-wise Precision-Recall (PR) Curve on Thermal Validation Set.</em>
+</p>
+
+<p align="center">
+  <img src="data/samples/thermal_baseline_detections.jpg" alt="Thermal Baseline Model Detection Predictions" width="95%" />
+</p>
+<p align="center">
+  <em>Figure 5: Thermal Baseline Model Sample Validation Object Detections on Infrared Imagery.</em>
+</p>
+
+---
+
 ## 🏗️ Professional Project Architecture
 
 ```text
@@ -127,7 +168,10 @@ thermal-border-intrusion/
 │       ├── rgb_thermal_preview.png
 │       ├── rgb_baseline_results.png
 │       ├── rgb_baseline_pr_curve.png
-│       └── rgb_baseline_detections.jpg
+│       ├── rgb_baseline_detections.jpg
+│       ├── thermal_baseline_results.png
+│       ├── thermal_baseline_pr_curve.png
+│       └── thermal_baseline_detections.jpg
 ├── notebooks/                # Jupyter exploration & experiment notebooks
 │   ├── 01_dataset_exploration.ipynb
 │   ├── 02_preprocessing.ipynb
@@ -207,15 +251,15 @@ Run these commands in order inside `C:\Users\prabh\Downloads\thermal-border-intr
 ```powershell
 python src/training/train_rgb.py --epochs 50 --batch 16
 ```
-> *Status: ✅ Completed in 6.013 hrs on RTX 3050 GPU. Checkpoint: `runs/rgb_baseline/rgb_yolov8/weights/best.pt`.*
+> *Status: ✅ Completed! 50 epochs trained in 6.013 hrs on RTX 3050. Checkpoint: `runs/rgb_baseline/rgb_yolov8/weights/best.pt`.*
 
-### 2️⃣ Train Thermal Baseline Model (Milestone M4 — Next Step)
+### 2️⃣ Train Thermal Baseline Model (Milestone M4 — Completed)
 ```powershell
 python src/training/train_thermal.py --epochs 50 --batch 16
 ```
-> *Trains baseline YOLOv8 on infrared thermal imagery on GPU. Checkpoint saved to `runs/thermal_baseline/thermal_yolov8/weights/best.pt`.*
+> *Status: ✅ Completed! 50 epochs trained in 6.065 hrs on RTX 3050. Checkpoint: `runs/thermal_baseline/thermal_yolov8/weights/best.pt`.*
 
-### 3️⃣ Train Dual-Stream Spatial Attention Fusion Model (Milestones M5 & M6)
+### 3️⃣ Train Dual-Stream Spatial Attention Fusion Model (Milestones M5 & M6 — Next Step)
 ```powershell
 python src/training/train_fusion.py --epochs 50 --batch 16 --lr 0.001
 ```
