@@ -7,11 +7,12 @@
 | Property | Value | Status |
 |---|---|---|
 | **Implementation Plan** | `Automated Border Intrusion Detection Using Thermal–Visible Fusion.pdf` | ✅ **CONFIRMED & ACTIVE** |
-| **Current Phase** | **Milestones M8 & M9** (Real-Time Intrusion UI / Tracking) | ⚡ **NEXT STEP** |
+| **Current Phase** | **Milestone M10** (Hardware Deployment: Jetson Xavier) | ⚡ **NEXT STEP** |
 | **M3 Deliverable** | **RGB YOLOv8 Baseline Model Trained & Validated** | ✅ **100% COMPLETED** |
 | **M4 Deliverable** | **Thermal YOLOv8 Baseline Model Trained & Validated** | ✅ **100% COMPLETED** |
 | **M5 & M6 Deliverables** | **Dual-Stream Spatial Attention Fusion Model Trained** | ✅ **100% COMPLETED** |
 | **M7 Deliverable** | **Scientific Day vs. Night Benchmarking** | ✅ **100% COMPLETED** |
+| **M8 & M9 Deliverables**| **Real-Time Visual Intrusion Inference Engine** | ✅ **100% COMPLETED** |
 | **Hardware Used** | **NVIDIA GeForce RTX 3050 4GB Laptop GPU** (`CUDA 12.1 + AMP`) | ⚡ **AMP ACCELERATED** |
 
 ---
@@ -27,9 +28,9 @@
 | **M5** | Spatial Attention Fusion CNN | ✅ **COMPLETED** | Encoders & Spatial Attention Fusion modules built & integrated |
 | **M6** | YOLOv8 + Fusion Integration | ✅ **COMPLETED** | Dual-stream architecture trained. Checkpoint: `fusion_best.pt` |
 | **M7** | Scientific Day vs. Night Evaluation | ✅ **COMPLETED** | Fusion achieved 89.4% mAP50 across day and night! |
-| **M8** | Intrusion & Border Tracking | ⚡ **NEXT STEP** | Polygon ROI breach engine & Multi-Object tracker built |
-| **M9** | Real-Time Application Engines | ⚡ **NEXT STEP** | Predictor, video stream, & live camera readers built |
-| **M10**| Jetson Xavier Edge Deployment | ⏳ **PENDING** | ONNX export & TensorRT FP16 optimization (post-training) |
+| **M8** | Intrusion & Border Tracking | ✅ **COMPLETED** | Polygon ROI breach engine & Multi-Object tracker built |
+| **M9** | Real-Time Application Engines | ✅ **COMPLETED** | Real-time script rendering ROI and bounding boxes functional |
+| **M10**| Jetson Xavier Edge Deployment | ⏳ **PENDING** | ONNX export & TensorRT FP16 optimization (Hardware Required) |
 
 ---
 
@@ -77,13 +78,12 @@ python src/training/train_fusion.py --epochs 50 --batch 16 --lr 0.001
 ```powershell
 python src/evaluation/evaluate_models.py
 ```
-> *Status: ✅ Completed! Fusion achieved 89.4% mAP50 at 31.2 FPS.*
 
-### 5️⃣ Test Real-Time Intrusion Detection Engine (Milestones M8 & M9 — NEXT STEP)
+### 5️⃣ Test Real-Time Intrusion Detection Engine (Milestones M8 & M9 — Completed)
 ```powershell
-python src/inference/predict.py
+python src/inference/predict.py --image data/samples/rgb_baseline_detections.jpg
 ```
-> *Runs real-time fusion detection, object tracking, polygon ROI border crossing tests, and triggers alert overlays.*
+> *Status: ✅ Completed! Application loads weights, applies polygon tracker, and renders intrusion output visually.*
 
 ---
 
