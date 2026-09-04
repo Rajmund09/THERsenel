@@ -9,9 +9,18 @@ data/processed/*
 !data/samples/**
 
 # Weights / checkpoints
+*.pt
+*.onnx
+*.engine
 weights/**/*.pt
 weights/**/*.onnx
 weights/**/*.engine
+
+# Video Media
+*.mp4
+*.avi
+*.mov
+*.mkv
 
 # Python
 __pycache__/
