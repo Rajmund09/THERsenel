@@ -1,0 +1,41 @@
+/* ==========================================================================
+   CROSS-DITHER BACKGROUND ELEMENT
+   Organic 1-Bit Halftone Cross-Stitch Topographic Sculpture (Right Side, Top 0 to Bottom 100)
+   ========================================================================== */
+
+.cross-dither-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 44vw;
+  max-width: 660px;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+  /* 1-bit native halftone dissolution - no blurred CSS mask */
+  opacity: 0.95;
+}
+
+.cross-dither-bg-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+
+@media (max-width: 1024px) {
+  .cross-dither-backdrop {
+    width: 50vw;
+    max-width: 500px;
+    opacity: 0.85;
+  }
+}
+
+@media (max-width: 680px) {
+  .cross-dither-backdrop {
+    width: 48vw;
+    max-width: 260px;
+    opacity: 0.40;
+  }
+}

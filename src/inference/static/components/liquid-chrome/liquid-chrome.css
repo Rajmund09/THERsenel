@@ -1,0 +1,27 @@
+/* liquid-chrome.css — Styling for WebGL LiquidChrome background */
+
+.liquidChrome-container,
+.liquid-chrome-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.liquidChrome-container canvas,
+.liquid-chrome-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  opacity: 0.95;
+}
+
+/* Scoped to metallic black header */
+.metallic-black-header .liquid-chrome-container {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: auto;
+}

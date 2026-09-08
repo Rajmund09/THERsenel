@@ -1,0 +1,43 @@
+/* compact-dot-grid.css — Simple and textured 3D compact pixel dot background */
+.compact-dot-grid-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.compact-dot-grid-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Site Background Mode (Fixed across entire viewport) */
+.compact-dot-site-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: #000000;
+}
+
+.compact-dot-site-bg canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Subtle atmospheric depth vignette to keep UI cards ultra-readable */
+.compact-dot-site-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 70% at 50% 50%, rgba(0, 0, 0, 0) 30%, rgba(0, 0, 0, 0.65) 100%);
+  pointer-events: none;
+  z-index: 1;
+}

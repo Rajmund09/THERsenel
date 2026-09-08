@@ -1,0 +1,626 @@
+/* ==========================================================================
+   REACT BITS <PixelCard /> COMPONENT CSS & TACTICAL ORANGE-GREEN-BLACK THEME
+   ========================================================================== */
+
+/* ── Base React Bits PixelCard Specifications ── */
+.pixel-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pixel-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--pixel-card-border, #ffffff);
+  background: var(--pixel-card-background, transparent);
+  border-radius: 20px;
+  isolation: isolate;
+  transition: border-color 300ms cubic-bezier(0.5, 1, 0.89, 1), box-shadow 300ms cubic-bezier(0.5, 1, 0.89, 1);
+  user-select: none;
+}
+
+.pixel-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  aspect-ratio: 1;
+  background: radial-gradient(circle at center,
+      var(--pixel-card-active-color, rgba(0, 0, 0, 0.25)) 0%,
+      rgba(0, 255, 94, 0.12) 40%,
+      rgba(255, 115, 0, 0.8) 75%,
+      transparent 100%);
+  opacity: 0;
+  transition: opacity 800ms cubic-bezier(0.5, 1, 0.89, 1);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pixel-card:hover::before,
+.pixel-card:focus-within::before {
+  opacity: 1;
+}
+
+/* Ensure all interactive card contents sit cleanly above the canvas and glow */
+.pixel-card>*:not(.pixel-canvas) {
+  position: relative;
+  z-index: 2;
+}
+
+/* ==========================================================================
+   TACTICAL OUTPUT CARD UI/UX (ORANGE, GREEN, BLACK)
+   ========================================================================== */
+
+.data-card.display-card.tactical-output-card {
+  background: #000000;
+  background: linear-gradient(170deg, #0d1210 0%, #080a09 100%);
+  border: 1px solid #1a231e;
+  border-radius: 16px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(34, 197, 94, 0.12);
+  color: #000000;
+  position: relative;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 580px;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.data-card.display-card.tactical-output-card:hover {
+  border-color: rgba(249, 115, 22, 0.45);
+  box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.9),
+    0 0 35px rgba(249, 115, 22, 0.18),
+    0 0 20px rgba(34, 197, 94, 0.14),
+    0 0 0 1px rgba(34, 197, 94, 0.3);
+}
+
+/* Tactical Corner Reticles / Brackets */
+.tactical-corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 3;
+  transition: all 0.3s ease;
+}
+
+.tactical-corner-tl {
+  top: 10px;
+  left: 10px;
+  border-top: 2px solid #f97316;
+  /* Thermal Orange */
+  border-left: 2px solid #f97316;
+}
+
+.tactical-corner-tr {
+  top: 10px;
+  right: 10px;
+  border-top: 2px solid #f97316;
+  /* Thermal Orange */
+  border-right: 2px solid #f97316;
+}
+
+.tactical-corner-bl {
+  bottom: 10px;
+  left: 10px;
+  border-bottom: 2px solid #22c55e;
+  /* Tactical Green */
+  border-left: 2px solid #22c55e;
+}
+
+.tactical-corner-br {
+  bottom: 10px;
+  right: 10px;
+  border-bottom: 2px solid #22c55e;
+  /* Tactical Green */
+  border-right: 2px solid #22c55e;
+}
+
+.data-card.display-card.tactical-output-card:hover .tactical-corner {
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Card Header ── */
+.tactical-output-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 14px;
+}
+
+.tactical-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tactical-badge-black {
+  background: #141a17;
+  border: 1px solid #24302a;
+  color: #94a3b8;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.tactical-header-title {
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  color: #f1f5f9;
+}
+
+.tactical-header-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tactical Green Tag */
+.tactical-tag-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.tactical-tag-green .led-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 8px #22c55e;
+  animation: ledPulseGreen 2s infinite ease-in-out;
+}
+
+/* Tactical Orange Tag */
+.tactical-tag-orange {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(249, 115, 22, 0.1);
+  border: 1px solid rgba(249, 115, 22, 0.35);
+  color: #fb923c;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+
+.tactical-tag-orange .led-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ea580c;
+  box-shadow: 0 0 8px #f97316;
+  animation: ledPulseOrange 2s infinite ease-in-out;
+}
+
+@keyframes ledPulseGreen {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+@keyframes ledPulseOrange {
+
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+/* ── Alert Banner ── */
+.tactical-output-card .alert-minimal {
+  background: rgba(234, 88, 12, 0.14);
+  border: 1px solid #ea580c;
+  border-radius: 8px;
+  color: #ffedd5;
+  box-shadow: 0 0 20px rgba(234, 88, 12, 0.25), inset 0 0 12px rgba(234, 88, 12, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.tactical-output-card .alert-minimal::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(249, 115, 22, 0.25), transparent);
+  animation: alertGlint 2.5s infinite;
+}
+
+@keyframes alertGlint {
+  0% {
+    left: -100%;
+  }
+
+  100% {
+    left: 100%;
+  }
+}
+
+.tactical-output-card .alert-dot {
+  background-color: #f97316;
+  box-shadow: 0 0 10px #f97316;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.tactical-output-card #alert-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: #ffaa40;
+}
+
+/* ── Central Viewport Display Panel ── */
+.tactical-output-card .display-panel {
+  flex: 1;
+  min-height: 420px;
+  background: #070908;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95);
+}
+
+/* High-tech Viewport Header Bar */
+.viewport-hud-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 14px;
+  background: rgba(14, 20, 17, 0.85);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  z-index: 12;
+  user-select: none;
+}
+
+.viewport-hud-bar .cam-id {
+  color: #4ade80;
+  font-weight: 600;
+}
+
+.viewport-hud-bar .status-readout {
+  color: #fb923c;
+}
+
+/* Viewport Inner Container */
+.viewport-content-area {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Background HUD Grid for Viewport */
+.viewport-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(34, 197, 94, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(34, 197, 94, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Central Viewport Crosshair */
+.viewport-crosshair {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.4;
+}
+
+.viewport-crosshair::before {
+  content: '';
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 1px dashed rgba(34, 197, 94, 0.35);
+  border-radius: 50%;
+}
+
+.viewport-crosshair::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: rgba(249, 115, 22, 0.6);
+  border-radius: 50%;
+}
+
+/* Image Element in Tactical Viewport */
+.tactical-output-card #output-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: #070908;
+  z-index: 10;
+}
+
+/* Standby Placeholder State */
+.tactical-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  z-index: 5;
+  text-align: center;
+  padding: 32px;
+}
+
+.radar-sweep-container {
+  position: relative;
+  width: 90px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.radar-sweep-outer {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(34, 197, 94, 0.1);
+}
+
+.radar-sweep-inner {
+  position: absolute;
+  inset: 18px;
+  border: 1px dashed rgba(249, 115, 22, 0.35);
+  border-radius: 50%;
+}
+
+.radar-line {
+  position: absolute;
+  width: 50%;
+  height: 2px;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0% 50%;
+  background: linear-gradient(90deg, #22c55e, transparent);
+  animation: radarSpin 3s linear infinite;
+}
+
+@keyframes radarSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tactical-placeholder .standby-title {
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 18px;
+  letter-spacing: 0.1em;
+  color: #4ade80;
+  text-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+}
+
+.tactical-placeholder .standby-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  max-width: 280px;
+  line-height: 1.6;
+}
+
+.tactical-placeholder .standby-channels {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.channel-pill {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.channel-pill.ch-rgb {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.channel-pill.ch-thermal {
+  background: rgba(249, 115, 22, 0.15);
+  color: #fb923c;
+  border: 1px solid rgba(249, 115, 22, 0.3);
+}
+
+/* Spinner / Processing State */
+.tactical-spinner-wrapper {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 9, 8, 0.95);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  z-index: 15;
+}
+
+.tactical-scan-beam {
+  position: relative;
+  width: 140px;
+  height: 2px;
+  background: #1e2922;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.tactical-scan-beam::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 60px;
+  background: linear-gradient(90deg, #f97316, #22c55e);
+  box-shadow: 0 0 12px #22c55e;
+  animation: scanLaser 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes scanLaser {
+  0% {
+    left: -60px;
+  }
+
+  100% {
+    left: 140px;
+  }
+}
+
+.tactical-spinner-wrapper .proc-title {
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 16px;
+  color: #fb923c;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 12px rgba(249, 115, 22, 0.4);
+}
+
+.tactical-spinner-wrapper .proc-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #4ade80;
+  letter-spacing: 0.08em;
+}
+
+/* ── Card Footer ── */
+.tactical-output-card .card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tactical-footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: #111714;
+  border: 1px solid #1e2823;
+  color: #cbd5e1;
+}
+
+.tactical-footer-badge.badge-model {
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #86efac;
+}
+
+.tactical-footer-badge.badge-fusion {
+  border-color: rgba(249, 115, 22, 0.3);
+  color: #fdba74;
+}
+
+.tactical-footer-badge.badge-target {
+  border-color: #27272a;
+  color: #94a3b8;
+}
+
+.tactical-footer-badge .badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+.badge-model .badge-dot {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+.badge-fusion .badge-dot {
+  background: #f97316;
+  box-shadow: 0 0 6px #f97316;
+}
+
+.badge-target .badge-dot {
+  background: #64748b;
+}

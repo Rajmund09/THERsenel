@@ -1,0 +1,33 @@
+/* silk.css — Styling for React Bits <Silk /> component as unified site background */
+.silk-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.silk-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Unified Site Background Mode */
+.silk-site-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background-color: #000000;
+}
+
+.silk-site-bg canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
