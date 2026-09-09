@@ -1,0 +1,3466 @@
+:root {
+  --canvas: #F4F3EF;
+  --surface: #FAFAF7;
+  --ink: #111111;
+  --muted: #6F706C;
+  --line: #D9D8D3;
+  --soft-line: #E7E6E1;
+  --green: #00E676;
+  --neon-green: #00E676;
+  --orange: #FF6B00;
+  --thermal: #FF6B00;
+}
+
+/* Lenis Smooth Scrolling — Full Site Fluidity */
+html.lenis, html.lenis body {
+  height: auto;
+  min-height: 100vh;
+}
+
+html.lenis {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--canvas);
+  color: var(--ink);
+  font-family: 'Inter', -apple-system, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Background grid */
+.bg-grid {
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background-image: radial-gradient(rgba(17,17,17,0.08) 0.7px, transparent 0.7px);
+  background-size: 8px 8px;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Typography Classes */
+.display-font {
+  font-family: 'DotGothic16', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+.body-font {
+  font-family: 'Inter', sans-serif;
+}
+
+.tech-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tech-label {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.text-muted { color: var(--muted); }
+.highlight { color: var(--ink); font-weight: 600; }
+
+/* System Status HUD */
+.system-status-hud {
+  position: fixed;
+  top: 32px;
+  left: 32px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(17,17,17,0.05);
+}
+
+.hud-indicator {
+  position: relative;
+  width: 8px;
+  height: 8px;
+}
+
+.hud-dot {
+  position: absolute;
+  inset: 0;
+  background-color: var(--green);
+  border-radius: 50%;
+}
+
+.hud-ping {
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--green);
+  border-radius: 50%;
+  animation: radarPing 2s infinite ease-out;
+}
+
+@keyframes radarPing {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(2); opacity: 0; }
+}
+
+.giant-curved-band {
+  position: fixed;
+  top: 50%;
+  margin-top: -600px;
+  left: -600px;
+  width: 1200px;
+  height: 1200px;
+  z-index: 0;
+  pointer-events: none;
+  animation: spinRotate 120s linear infinite;
+  opacity: 0.8;
+}
+
+.giant-curved-band.right-side {
+  left: auto;
+  right: -600px;
+}
+
+.giant-curved-band svg {
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes spinRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+.nav-links a { text-decoration: none; color: var(--muted); transition: color 0.2s; }
+.nav-links a:hover { color: var(--ink); }
+
+.status-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  background-color: var(--green);
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+/* ----------------------------- */
+/* RESPONSIVE ICON & LABEL HELPERS */
+/* ----------------------------- */
+
+.btn-text-mobile,
+.node-label-mobile,
+.tag-mobile,
+.pill-text-mobile,
+.chip-text-mobile,
+.logs-text-mobile {
+  display: none !important;
+}
+
+.btn-text-desktop,
+.node-label-desktop,
+.tag-desktop,
+.pill-text-desktop,
+.chip-text-desktop,
+.logs-text-desktop {
+  display: inline !important;
+}
+
+.node-icon,
+.header-tag-icon,
+.pill-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.footer-logs-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: inherit;
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+.footer-logs-btn:hover {
+  color: var(--ink);
+}
+
+/* ==========================================================================
+   4D PAPER BOARD UPPER ZONE (HERO HEADER)
+   ========================================================================== */
+
+.metallic-black-header-wrapper {
+  position: relative;
+  max-width: 860px;
+  width: calc(100% - 48px);
+  margin: 32px auto 26px auto;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.16)) drop-shadow(0 20px 40px rgba(0, 0, 0, 0.24));
+  z-index: 10;
+}
+
+/* 4D Paper Underlayer Sheet (Physical depth) */
+.paper-underlayer {
+  position: absolute;
+  inset: 5px -3px -7px 5px;
+  background: linear-gradient(135deg, #1C1917 0%, #100E0D 100%);
+  clip-path: polygon(
+    20px 0%,
+    calc(100% - 20px) 0%,
+    100% 20px,
+    100% calc(100% - 20px),
+    calc(100% - 20px) 100%,
+    20px 100%,
+    0% calc(100% - 20px),
+    0% 20px
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 1;
+  filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.28));
+}
+
+.metallic-black-header {
+  position: relative;
+  width: 100%;
+  min-height: 330px;
+  background: 
+    radial-gradient(ellipse 90% 70% at 50% -20%, rgba(255, 60, 60, 0.08) 0%, transparent 70%),
+    linear-gradient(180deg, #230202 0%, #170101 45%, #0B0101 100%);
+  background-color: #230202;
+  padding: 40px 24px 42px 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #FFFFFF;
+  clip-path: polygon(
+    20px 0%,
+    calc(100% - 20px) 0%,
+    100% 20px,
+    100% calc(100% - 20px),
+    calc(100% - 20px) 100%,
+    20px 100%,
+    0% calc(100% - 20px),
+    0% 20px
+  );
+  z-index: 2;
+}
+
+/* 4D Paper Dimensional Frame Overlay */
+.paper-4d-frame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.paper-rim-outer {
+  fill: none;
+  stroke: url(#paperRimGrad);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  shape-rendering: geometricPrecision;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.45));
+}
+
+.paper-crease-inner {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  shape-rendering: geometricPrecision;
+}
+
+.paper-fold-seam {
+  stroke: rgba(255, 255, 255, 0.3);
+  stroke-width: 1;
+  shape-rendering: geometricPrecision;
+}
+
+.paper-corner-rivet {
+  fill: #FFFFFF;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.9));
+}
+
+.paper-plate-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 7.5px;
+  fill: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.14em;
+  font-weight: 500;
+  user-select: none;
+}
+
+.mobile-frame {
+  display: none;
+}
+
+@media (max-width: 680px) {
+  .desktop-frame,
+  .mobile-frame,
+  .paper-underlayer {
+    display: none !important;
+  }
+  .metallic-black-header-wrapper {
+    margin: 0 auto 16px auto;
+    width: 100%;
+    max-width: 100%;
+    animation: mobileBannerEntrance 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .metallic-black-header {
+    clip-path: none !important;
+    border-radius: 0 0 28px 28px;
+    padding: 28px 16px 30px 16px;
+    min-height: 240px;
+    box-shadow: 
+      0 16px 45px -10px rgba(0, 0, 0, 0.55),
+      0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+    border-bottom: 1px solid rgba(255, 107, 0, 0.35);
+  }
+}
+
+@keyframes mobileBannerEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* LiquidChrome Background inside Metallic Black Header */
+.metallic-black-header .liquid-chrome-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: auto;
+  opacity: 0.95;
+}
+
+.metallic-black-header .liquid-chrome-container canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Metallic Dot Matrix Overlay (Soft texture over chrome) */
+.metallic-black-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.08) 0.8px, transparent 0.8px);
+  background-size: 8px 8px;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.45;
+}
+
+/* Top Subtle Brushed Metallic Highlight Hairline */
+.metallic-black-header::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.2) 20%,
+    rgba(255, 255, 255, 0.55) 50%,
+    rgba(255, 255, 255, 0.2) 80%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Rotating Technical Bands inside Metallic Header */
+.metallic-black-header .giant-curved-band {
+  position: absolute;
+  top: 50%;
+  margin-top: -450px;
+  left: -420px;
+  width: 900px;
+  height: 900px;
+  z-index: 1;
+  pointer-events: none;
+  animation: spinRotate 120s linear infinite;
+  opacity: 0.75;
+}
+
+.metallic-black-header .giant-curved-band.right-side {
+  left: auto;
+  right: -420px;
+}
+
+.metallic-black-header .giant-curved-band circle {
+  stroke: rgba(255, 255, 255, 0.12) !important;
+}
+
+.metallic-black-header .giant-curved-band text {
+  fill: rgba(255, 255, 255, 0.38) !important;
+}
+
+/* System Status HUD inside Metallic Header */
+.metallic-black-header .system-status-hud {
+  position: absolute;
+  top: 24px;
+  left: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: rgba(255, 255, 255, 0.85);
+  z-index: 10;
+}
+
+/* Content Container inside Metallic Header */
+.metallic-hero-content {
+  position: relative;
+  z-index: 5;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Subtitle in Metallic Header */
+.metallic-black-header .hero-subtitle {
+  color: #9CA3AF;
+  font-size: 13px;
+  max-width: 460px;
+  margin: 12px auto 0 auto;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+}
+
+/* Layout */
+.content-wrapper {
+  max-width: 1200px;
+  margin: 32px auto 0 auto;
+  padding: 36px 32px 64px 32px;
+  position: relative;
+  z-index: 5;
+}
+
+/* Animated Flow Diagram - Enlarged & Tactile */
+.flow-diagram {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  height: 320px;
+  margin: 0 auto 56px auto;
+}
+
+.flow-svg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+}
+
+/* Solid Visible Black Connecting Paths */
+.flow-path {
+  fill: none;
+  stroke: #111111;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.95;
+}
+
+/* Solid Black Particles */
+.flow-dot {
+  fill: #111111;
+}
+
+.flow-nodes {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: auto;
+}
+
+/* ---------------------------------------------------- */
+/* SOLID METALLIC TWO-TONE 3D BUTTONS (NO RGB GLOW)    */
+/* ---------------------------------------------------- */
+.btn-3d-node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  border-radius: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  outline: none;
+  user-select: none;
+  z-index: 15;
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+/* Dedicated Tactile Icon Pod (First Color of 2-Tone Button) */
+.btn-3d-icon-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 2px 4px rgba(0, 0, 0, 0.25);
+  transition: transform 0.16s ease;
+}
+
+.btn-3d-node:hover .btn-3d-icon-badge {
+  transform: scale(1.05);
+}
+
+.btn-3d-text {
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* 1. RGB CAM: Solid Gunmetal Chassis + Emerald Anodized Icon Pod */
+.node-metallic-gunmetal {
+  background: linear-gradient(180deg, #2D3339 0%, #1D2227 100%);
+  color: #F8FAFC;
+  border: 1.5px solid #475569;
+  box-shadow: 
+    0 4px 0 #0F172A,
+    0 8px 18px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.node-metallic-gunmetal .badge-emerald {
+  background: linear-gradient(135deg, #00C853 0%, #007E33 100%);
+  color: #FFFFFF;
+  border: 1px solid #69F0AE;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.node-metallic-gunmetal:hover {
+  background: linear-gradient(180deg, #37414B 0%, #232A30 100%);
+  transform: translate(-50%, calc(-50% - 2px));
+  box-shadow: 
+    0 6px 0 #0F172A,
+    0 12px 22px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.node-metallic-gunmetal:active {
+  transform: translate(-50%, calc(-50% + 2px));
+  box-shadow: 
+    0 2px 0 #0F172A,
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* 2. THERMAL: Solid Dark Bronze Chassis + Amber Copper Icon Pod */
+.node-metallic-bronze {
+  background: linear-gradient(180deg, #2D2520 0%, #1A1410 100%);
+  color: #F8FAFC;
+  border: 1.5px solid #574435;
+  box-shadow: 
+    0 4px 0 #0A0806,
+    0 8px 18px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.node-metallic-bronze .badge-amber {
+  background: linear-gradient(135deg, #FF6D00 0%, #D84315 100%);
+  color: #FFFFFF;
+  border: 1px solid #FFA040;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.node-metallic-bronze:hover {
+  background: linear-gradient(180deg, #382F29 0%, #221B16 100%);
+  transform: translate(-50%, calc(-50% - 2px));
+  box-shadow: 
+    0 6px 0 #0A0806,
+    0 12px 22px rgba(0, 0, 0, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.node-metallic-bronze:active {
+  transform: translate(-50%, calc(-50% + 2px));
+  box-shadow: 
+    0 2px 0 #0A0806,
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* 3. DETECTION: Solid Platinum White Chassis + Obsidian Black Icon Pod */
+.node-metallic-platinum {
+  background: linear-gradient(180deg, #FFFFFF 0%, #EAECE8 100%);
+  color: #0F172A;
+  border: 1.5px solid #CBD5E1;
+  box-shadow: 
+    0 4px 0 #94A3B8,
+    0 8px 18px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 #FFFFFF;
+}
+
+.node-metallic-platinum .badge-obsidian {
+  background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+  color: #FFFFFF;
+  border: 1px solid #334155;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3), 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.node-metallic-platinum:hover {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F1F3EF 100%);
+  transform: translate(-50%, calc(-50% - 2px));
+  box-shadow: 
+    0 6px 0 #94A3B8,
+    0 12px 22px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 #FFFFFF;
+}
+
+.node-metallic-platinum:active {
+  transform: translate(-50%, calc(-50% + 2px));
+  box-shadow: 
+    0 2px 0 #94A3B8,
+    0 4px 8px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 #FFFFFF;
+}
+
+/* 4. LOGIC: Solid Matte Obsidian Black Chassis + Silver Chrome Icon Pod */
+.node-metallic-obsidian {
+  background: linear-gradient(180deg, #1C1C1E 0%, #0B0B0C 100%);
+  color: #F8FAFC;
+  border: 1.5px solid #3F3F46;
+  box-shadow: 
+    0 4px 0 #000000,
+    0 8px 18px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.node-metallic-obsidian .badge-chrome {
+  background: linear-gradient(135deg, #F1F5F9 0%, #94A3B8 100%);
+  color: #0F172A;
+  border: 1px solid #FFFFFF;
+  box-shadow: inset 0 1px 0 #FFFFFF, 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.node-metallic-obsidian:hover {
+  background: linear-gradient(180deg, #27272A 0%, #121214 100%);
+  transform: translate(-50%, calc(-50% - 2px));
+  box-shadow: 
+    0 6px 0 #000000,
+    0 12px 22px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.node-metallic-obsidian:active {
+  transform: translate(-50%, calc(-50% + 2px));
+  box-shadow: 
+    0 2px 0 #000000,
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ---------------------------------------------------- */
+/* CENTRAL FUSION HUB: 3D GLASS DEPTH (COLOR PRESERVED) */
+/* ---------------------------------------------------- */
+.flow-hub {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 86px; height: 86px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--canvas);
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  border-radius: 20px;
+  z-index: 10;
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  box-shadow: 
+    0 1px 0 rgba(255, 255, 255, 0.95) inset,
+    0 -2px 0 rgba(0, 0, 0, 0.06) inset,
+    0 3px 6px rgba(0, 0, 0, 0.04),
+    0 14px 28px rgba(0, 0, 0, 0.1);
+}
+
+.hub-ring {
+  position: absolute;
+  inset: -12px;
+  border: 1.5px dashed rgba(0, 0, 0, 0.3);
+  border-radius: 28px;
+  animation: spinSlow 12s linear infinite;
+}
+
+.hub-core {
+  width: 52px; height: 52px;
+  background: var(--surface);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.core-dots {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  animation: coreRotate 8s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+}
+
+.c-dot {
+  width: 8px; height: 8px;
+  background: #111111;
+  border-radius: 2px;
+  animation: dotPulse 2s ease-in-out infinite alternate;
+}
+
+.c-dot:nth-child(1) { animation-delay: 0s; }
+.c-dot:nth-child(2) { animation-delay: 0.5s; }
+.c-dot:nth-child(3) { animation-delay: 1s; }
+.c-dot:nth-child(4) { animation-delay: 1.5s; }
+
+@keyframes coreRotate {
+  0%, 20% { transform: rotate(0deg); }
+  25%, 45% { transform: rotate(90deg); }
+  50%, 70% { transform: rotate(180deg); }
+  75%, 95% { transform: rotate(270deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dotPulse {
+  0% { transform: scale(1); border-radius: 2px; }
+  100% { transform: scale(0.5); border-radius: 50%; }
+}
+
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+
+.thermal-label {
+  border-color: var(--thermal);
+  color: var(--thermal);
+}
+
+/* Dashboard Grid */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.panel-column {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* ==========================================================================
+   3D PRECISION TACTILE CONSOLE CARD SYSTEM (ALL CARDS)
+   ========================================================================== */
+
+.data-card,
+.card-3d-console {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFD 55%, #F1F5F9 100%);
+  border: 1.5px solid #CBD5E1;
+  border-top-color: #FFFFFF;
+  border-left-color: #E2E8F0;
+  border-right-color: #CBD5E1;
+  border-bottom-color: #94A3B8;
+  border-radius: 20px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  position: relative;
+  box-shadow: 
+    /* 1. Specular Top & Left Lighting Bevel */
+    inset 0 1.5px 0 0 #FFFFFF,
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 0 0 #E2E8F0,
+    /* 2. Precision Slate 3D Mechanical Rim (Clean Tactile Shelf) */
+    0 1px 0 0 #E2E8F0,
+    0 2px 0 0 #CBD5E1,
+    0 3.5px 0 0 #94A3B8,
+    /* 3. Deep Volumetric Atmospheric Shadows */
+    0 8px 18px -2px rgba(15, 23, 42, 0.08),
+    0 20px 40px -4px rgba(15, 23, 42, 0.12),
+    0 36px 72px -8px rgba(15, 23, 42, 0.08);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+}
+
+.data-card:hover,
+.card-3d-console:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    inset 0 2px 0 0 #FFFFFF,
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 0 0 #E2E8F0,
+    0 1px 0 0 #E2E8F0,
+    0 3px 0 0 #CBD5E1,
+    0 5.5px 0 0 #94A3B8,
+    0 12px 28px -2px rgba(15, 23, 42, 0.12),
+    0 28px 56px -4px rgba(15, 23, 42, 0.16),
+    0 48px 96px -8px rgba(15, 23, 42, 0.12);
+}
+
+/* 3D Hardware Corner Accents (Disabled for Clean Curvature) */
+.card-3d-corner {
+  display: none;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #E2E8F0;
+  box-shadow: 0 1px 0 #FFFFFF;
+  padding-bottom: 14px;
+  gap: 8px;
+}
+
+.header-badge-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+/* Solid Precision Elevated Tags & Badges (Matching 8px Geometry & 28px Height) */
+.label-3d-glow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  box-shadow: 0 2px 0 #94A3B8;
+  border-radius: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #0F172A;
+  white-space: nowrap;
+  line-height: 1;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.label-3d-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 10px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  box-shadow: 0 2px 0 #94A3B8;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  line-height: 1;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+.param-live-dot,
+.input-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00C853;
+  flex-shrink: 0;
+}
+
+.param-mode-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  font-weight: 700;
+  color: #047857;
+  background: #D1FAE5;
+  border: 1.5px solid #6EE7B7;
+  box-shadow: 0 2px 0 #A7F3D0;
+  white-space: nowrap;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-sizing: border-box;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   CARD 01: 3D UPLOAD SENSOR INPUT PLATTER
+   ========================================================================== */
+
+.upload-content-3d {
+  position: relative;
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+  border: 1.5px dashed #CBD5E1;
+  border-radius: 14px;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 
+    inset 0 2px 4px rgba(15, 23, 42, 0.04),
+    0 1px 0 #FFFFFF;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.upload-content-3d:hover {
+  background: #EDF2F7;
+  border-color: #00E676;
+  box-shadow: 
+    inset 0 2px 8px rgba(0, 230, 118, 0.08),
+    0 0 16px rgba(0, 230, 118, 0.15);
+}
+
+.upload-content-3d.dragover {
+  background: #EAFBF2;
+  border-color: #00E676;
+  border-style: solid;
+  transform: scale(1.01);
+}
+
+.upload-corner-mark {
+  display: none;
+}
+
+.upload-icon-chassis {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
+  border: 1.5px solid #E2E8F0;
+  border-bottom-color: #CBD5E1;
+  box-shadow: 
+    0 2.5px 0 #CBD5E1,
+    0 6px 14px rgba(15, 23, 42, 0.06),
+    inset 0 1px 0 #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0F172A;
+  transition: transform 0.25s ease, color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.upload-content-3d:hover .upload-icon-chassis {
+  transform: translateY(-2px);
+  color: #00E676;
+  border-color: rgba(0, 230, 118, 0.3);
+  box-shadow: 
+    0 3.5px 0 #007A3E,
+    0 8px 18px rgba(0, 230, 118, 0.25),
+    inset 0 1px 0 #FFFFFF;
+}
+
+.upload-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.upload-text-group {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.upload-heading {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: #111111;
+  font-size: 11px;
+}
+
+.upload-subtext {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  color: #8E8E93;
+  letter-spacing: 0.04em;
+}
+
+/* 3D SCAN Push-Button */
+.btn-scan-3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #111111;
+  color: #FFFFFF;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  text-transform: uppercase;
+  outline: none;
+  box-shadow: 
+    0 4px 0 #000000,
+    0 8px 18px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.16s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.16s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+  user-select: none;
+  overflow: hidden;
+}
+
+.btn-scan-3d:hover {
+  background: #1F1F1F;
+  transform: translateY(-1px);
+  box-shadow: 
+    0 5px 0 #000000,
+    0 12px 24px rgba(0, 0, 0, 0.32),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.btn-scan-3d:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 0 #000000,
+    0 4px 10px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.btn-scan-icon {
+  color: #00E676;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+.btn-scan-3d:hover .btn-scan-icon {
+  transform: rotate(90deg);
+}
+
+/* ==========================================================================
+   CARD 02: 3D TACTICAL PARAMETERS CONSOLE (CRISP TACTILE GEOMETRY & SOLID BAR)
+   ========================================================================== */
+
+.settings-card {
+  gap: 18px;
+}
+
+/* Precision Matte Tactical HUD Display Screen */
+.param-hud-screen {
+  background: #0E1217;
+  border: 1.5px solid #1E293B;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-screen-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.hud-screen-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #94A3B8;
+  letter-spacing: 0.06em;
+}
+
+.hud-screen-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8px;
+  font-weight: 600;
+  color: #00C853;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.status-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00C853;
+}
+
+.hud-screen-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.hud-value-display {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.hud-main-val {
+  font-family: 'DotGothic16', 'IBM Plex Mono', monospace;
+  font-size: 30px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.hud-unit-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  color: #64748B;
+  letter-spacing: 0.04em;
+}
+
+/* 10-Segment Solid LED Meter (No Blur) */
+.hud-led-meter {
+  display: flex;
+  align-items: center;
+  gap: 3.5px;
+}
+
+.led-seg {
+  width: 7.5px;
+  height: 16px;
+  border-radius: 2px;
+  background: #1C242D;
+  border: 1px solid #2A3644;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.led-seg.is-lit {
+  background: #00C853;
+  border-color: #00C853;
+}
+
+.led-seg.is-orange {
+  background: #FF6D00;
+  border-color: #FF6D00;
+}
+
+/* 3D Recessed Slider Control Row */
+.slider-control-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+/* 3D Nudge Stepper Buttons [-] and [+] (Crisp Solid Physical Depth) */
+.btn-nudge-3d {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  box-shadow: 0 2px 0 #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #0F172A;
+  flex-shrink: 0;
+  outline: none;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+  user-select: none;
+}
+
+.btn-nudge-3d:hover {
+  background: #F8FAFC;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 #94A3B8;
+}
+
+.btn-nudge-3d:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 #94A3B8;
+}
+
+/* 3D Debossed Track Groove & Solid Bar Fill */
+.range-wrapper-3d {
+  position: relative;
+  flex: 1;
+  height: 36px;
+  display: flex;
+  align-items: center;
+}
+
+.range-track-groove {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 8px;
+  border-radius: 999px;
+  background: #E5E7EB;
+  border: 1px solid #CBD5E1;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Solid Distinctive High-Contrast Bar Fill */
+.range-track-fill {
+  height: 100%;
+  width: 50%;
+  background: #111111;
+  border-radius: 999px;
+  box-shadow: none;
+  transition: width 0.05s ease-out;
+}
+
+/* 3D Range Input & Precision Milled Dial Thumb Dot */
+.range-wrapper-3d input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  position: relative;
+  z-index: 5;
+  margin: 0;
+  cursor: pointer;
+  outline: none;
+}
+
+.range-wrapper-3d input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #111111 0%, #111111 32%, #FFFFFF 34%, #FFFFFF 100%);
+  border: 1.5px solid #64748B;
+  box-shadow: 0 2px 0 #94A3B8, 0 3px 6px rgba(0, 0, 0, 0.16);
+  cursor: grab;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.range-wrapper-3d input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #111111 0%, #111111 32%, #FFFFFF 34%, #FFFFFF 100%);
+  border: 1.5px solid #64748B;
+  box-shadow: 0 2px 0 #94A3B8, 0 3px 6px rgba(0, 0, 0, 0.16);
+  cursor: grab;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.range-wrapper-3d input[type="range"]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.range-wrapper-3d input[type="range"]::-moz-range-track {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.range-wrapper-3d input[type="range"]:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+  box-shadow: 0 3px 0 #94A3B8, 0 5px 10px rgba(0, 0, 0, 0.22);
+  border-color: #0F172A;
+}
+
+.range-wrapper-3d input[type="range"]:hover::-moz-range-thumb {
+  transform: scale(1.1);
+  box-shadow: 0 3px 0 #94A3B8, 0 5px 10px rgba(0, 0, 0, 0.22);
+  border-color: #0F172A;
+}
+
+.range-wrapper-3d input[type="range"]:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 1px 0 #94A3B8, 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.range-wrapper-3d input[type="range"]:active::-moz-range-thumb {
+  cursor: grabbing;
+  transform: scale(1.15);
+  box-shadow: 0 1px 0 #94A3B8, 0 2px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Precision Scale Ticks */
+.range-scale-ticks {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 4px 6px 0 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #64748B;
+}
+
+.scale-point {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: color 0.15s;
+  user-select: none;
+}
+
+.scale-point.active {
+  color: #111111;
+  font-weight: 700;
+}
+
+.scale-tick {
+  width: 1.5px;
+  height: 4px;
+  background: #CBD5E1;
+}
+
+.scale-tick.major {
+  height: 7px;
+  background: #94A3B8;
+}
+
+.scale-point.active .scale-tick {
+  background: #111111;
+  height: 8px;
+}
+
+/* 3D Tactile Preset Push-Buttons (Solid Chassis) */
+.param-preset-group {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.btn-preset-3d {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  outline: none;
+  box-shadow: 0 2px 0 #94A3B8;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+  user-select: none;
+}
+
+.btn-preset-3d .preset-led {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #CBD5E1;
+  transition: background-color 0.15s;
+}
+
+.btn-preset-3d:hover {
+  background: #F8FAFC;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 0 #94A3B8;
+  color: #0F172A;
+}
+
+.btn-preset-3d:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 #94A3B8;
+}
+
+.btn-preset-3d.is-active {
+  background: #111111;
+  border-color: #111111;
+  color: #FFFFFF;
+  box-shadow: 0 2px 0 #000000;
+}
+
+.btn-preset-3d.is-active .preset-led {
+  background: #00C853;
+}
+
+/* ==========================================================================
+   CARD 03: 3D MASTER MONITORING OUTPUT CONSOLE
+   ========================================================================== */
+
+.data-card.display-card {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFD 55%, #F1F5F9 100%);
+  border: 1.5px solid #CBD5E1;
+  border-top-color: #FFFFFF;
+  border-left-color: #E2E8F0;
+  border-right-color: #CBD5E1;
+  border-bottom-color: #94A3B8;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 
+    /* 1. Specular Top & Left Lighting Bevel */
+    inset 0 1.5px 0 0 #FFFFFF,
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 0 0 #E2E8F0,
+    /* 2. Precision Slate 3D Mechanical Rim (Clean Tactile Shelf) */
+    0 1px 0 0 #E2E8F0,
+    0 2px 0 0 #CBD5E1,
+    0 3.5px 0 0 #94A3B8,
+    /* 3. Deep Volumetric Atmospheric Shadows */
+    0 8px 18px -2px rgba(15, 23, 42, 0.08),
+    0 20px 40px -4px rgba(15, 23, 42, 0.12),
+    0 36px 72px -8px rgba(15, 23, 42, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  justify-self: start;
+  transition: max-width 0.65s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease, box-shadow 0.25s ease;
+  position: relative;
+  overflow: visible;
+  cursor: default;
+}
+
+.data-card.display-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    inset 0 2px 0 0 #FFFFFF,
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 0 0 #E2E8F0,
+    0 1px 0 0 #E2E8F0,
+    0 3px 0 0 #CBD5E1,
+    0 5.5px 0 0 #94A3B8,
+    0 12px 28px -2px rgba(15, 23, 42, 0.12),
+    0 28px 56px -4px rgba(15, 23, 42, 0.16),
+    0 48px 96px -8px rgba(15, 23, 42, 0.12);
+}
+
+/* 3D Pills */
+.pill-3d {
+  box-shadow: 
+    0 2px 0 rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+/* Apple Header */
+.display-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding-bottom: 16px;
+}
+
+.apple-header-title {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.apple-header-title .title-text {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  color: #111111;
+  text-transform: uppercase;
+}
+
+.apple-header-title .index-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #8E8E93;
+  letter-spacing: 0.04em;
+}
+
+.apple-status-pills {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Neon Green Pill */
+.apple-pill-green {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(0, 230, 118, 0.08);
+  border: 1px solid rgba(0, 230, 118, 0.28);
+  border-radius: 999px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: #059669;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.apple-pill-green .pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00E676;
+  box-shadow: 0 0 8px rgba(0, 230, 118, 0.8);
+  animation: pulseNeonGreen 2s infinite ease-in-out;
+}
+
+/* Orange Pill */
+.apple-pill-orange {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(255, 107, 0, 0.08);
+  border: 1px solid rgba(255, 107, 0, 0.28);
+  border-radius: 999px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: #EA580C;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+}
+
+.apple-pill-orange .pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #FF6B00;
+  box-shadow: 0 0 8px rgba(255, 107, 0, 0.8);
+  animation: pulseNeonOrange 2s infinite ease-in-out;
+}
+
+@keyframes pulseNeonGreen {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+@keyframes pulseNeonOrange {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+/* Apple Minimal Alert Banner */
+.display-card .alert-minimal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border: 1px solid rgba(255, 107, 0, 0.35);
+  background: rgba(255, 107, 0, 0.08);
+  border-radius: 999px;
+  color: #EA580C;
+  box-shadow: 0 4px 16px rgba(255, 107, 0, 0.12);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.display-card .alert-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #FF6B00;
+  box-shadow: 0 0 10px #FF6B00;
+  animation: blinkOrange 1s infinite alternate;
+}
+
+@keyframes blinkOrange {
+  0% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.3; transform: scale(0.7); }
+}
+
+/* Display Panel Viewport */
+.display-card .display-panel {
+  width: 100%;
+  height: 420px;
+  min-height: 420px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  overflow: hidden;
+  position: relative;
+  background: #F8F8F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: height 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              min-height 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  cursor: default;
+}
+
+/* Output Image */
+#output-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background: transparent;
+  border-radius: 14px;
+  z-index: 10;
+  transition: opacity 0.4s ease;
+}
+
+/* Pixel Swap Canvas: Sits above viewport contents, 100% visible, non-blocking */
+.pixel-swap-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 20;
+  border-radius: 14px;
+}
+
+/* Standby State - Minimal, Apple aesthetic */
+.apple-standby {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  padding: 32px;
+  user-select: none;
+  z-index: 5;
+  transition: opacity 0.35s ease;
+}
+
+.apple-standby-icon {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.apple-standby-icon .icon-ring {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid rgba(0, 230, 118, 0.35);
+  border-radius: 50%;
+  animation: ringPulse 3s infinite ease-in-out;
+}
+
+.apple-standby-icon .icon-ring-inner {
+  position: absolute;
+  inset: 10px;
+  border: 1px dashed rgba(255, 107, 0, 0.4);
+  border-radius: 50%;
+}
+
+.apple-standby-icon .icon-center-dot {
+  width: 8px;
+  height: 8px;
+  background: #00E676;
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 230, 118, 0.7);
+}
+
+@keyframes ringPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 0.4; }
+}
+
+.apple-standby-title {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  color: #111111;
+}
+
+.apple-standby-desc {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 12px;
+  color: #737373;
+  line-height: 1.5;
+  max-width: 280px;
+}
+
+.apple-standby-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.04);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #666666;
+  letter-spacing: 0.04em;
+}
+
+.apple-standby-tag .tag-indicator {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00E676;
+}
+
+/* Spinner / Processing State */
+.apple-processing {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+  z-index: 6;
+  background: #F8F8F6;
+  transition: opacity 0.35s ease;
+}
+
+.apple-progress-bar {
+  width: 120px;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.apple-progress-bar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 50%;
+  background: linear-gradient(90deg, #00E676, #FF6B00);
+  border-radius: 999px;
+  animation: appleSlide 1.2s infinite ease-in-out alternate;
+}
+
+@keyframes appleSlide {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+.apple-processing-title {
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  color: #111111;
+}
+
+.apple-processing-sub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #8E8E93;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* Card Footer */
+.display-card .card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  padding-top: 16px;
+  position: relative;
+  gap: 12px;
+}
+
+.card-footer-chips {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.apple-footer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: #666666;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.apple-footer-chip .chip-dot-green {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00E676;
+}
+
+.apple-footer-chip .chip-dot-orange {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #FF6B00;
+}
+
+/* ---------------------------------------------------- */
+/* ATTACHED DROPUP TELEMETRY DOCK & PANEL                */
+/* ---------------------------------------------------- */
+.attached-dropup-dock {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  z-index: 30;
+}
+
+/* Trigger Button */
+.dropup-trigger {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  background: #111111;
+  color: #FFFFFF;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  user-select: none;
+}
+
+.dropup-text-desktop {
+  display: inline;
+}
+
+.dropup-text-mobile {
+  display: none;
+}
+
+.dropup-trigger:hover {
+  background: #222222;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.dropup-trigger:active {
+  transform: translateY(0);
+}
+
+.dropup-icon-chevron {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.attached-dropup-dock.is-open .dropup-icon-chevron {
+  transform: rotate(180deg);
+  color: #00E676;
+}
+
+.dropup-icon-radar {
+  color: #00E676;
+  animation: radarSpin 4s linear infinite;
+}
+
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.dropup-badge-live {
+  font-size: 8px;
+  font-weight: 700;
+  color: #00E676;
+  background: rgba(0, 230, 118, 0.15);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.06em;
+}
+
+/* Attached Dropup Panel */
+.attached-dropup-panel {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  right: 0;
+  width: 380px;
+  max-width: min(380px, calc(100vw - 32px));
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  box-shadow: 
+    0 -18px 45px -10px rgba(0, 0, 0, 0.14),
+    0 4px 16px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  z-index: 100;
+  pointer-events: none;
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(14px) scale(0.96);
+  transform-origin: bottom right;
+  transition: 
+    opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.32s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.3s ease;
+}
+
+/* Pointer beak pointing to trigger button */
+.attached-dropup-panel::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  right: 28px;
+  width: 12px;
+  height: 12px;
+  background: #FFFFFF;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  transform: rotate(45deg);
+}
+
+/* Open State */
+.attached-dropup-dock.is-open .attached-dropup-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+/* Dropup Header */
+.dropup-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.panel-header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.panel-title-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #111111;
+  text-transform: uppercase;
+}
+
+.panel-subtitle {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  color: #8E8E93;
+  letter-spacing: 0.04em;
+}
+
+.panel-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #059669;
+  background: rgba(0, 230, 118, 0.1);
+  border: 1px solid rgba(0, 230, 118, 0.25);
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.panel-status-pill .pill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #00E676;
+  box-shadow: 0 0 6px rgba(0, 230, 118, 0.8);
+}
+
+/* Telemetry Grid (2x2) */
+.dropup-telemetry-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.telemetry-card {
+  background: #F8F8F6;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 8px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.telemetry-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  color: #737373;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.telemetry-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  color: #111111;
+  letter-spacing: -0.01em;
+}
+
+.telemetry-val .text-sub {
+  font-size: 9.5px;
+  font-weight: 400;
+  color: #8E8E93;
+}
+
+.text-accent-orange {
+  color: #EA580C;
+}
+
+.text-accent-green {
+  color: #059669;
+}
+
+.dropup-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* Modes Section */
+.dropup-modes-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 600;
+  color: #737373;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.spectral-mode-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.spectral-mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 7px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: #333333;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.spectral-mode-btn:hover {
+  background: #F3F3F1;
+  border-color: rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.spectral-mode-btn.is-active {
+  background: #111111;
+  border-color: #111111;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.mode-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.mode-dot-fusion { background: #00E676; box-shadow: 0 0 5px rgba(0, 230, 118, 0.7); }
+.mode-dot-thermal { background: #FFFFFF; border: 1px solid #999; }
+.mode-dot-ironbow { background: #FF6B00; box-shadow: 0 0 5px rgba(255, 107, 0, 0.7); }
+.mode-dot-rgb { background: #3B82F6; }
+
+/* Toggles Row */
+.dropup-toggles-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.dropup-toggle-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dropup-toggle-item input[type="checkbox"] {
+  display: none;
+}
+
+.custom-toggle-slider {
+  position: relative;
+  width: 26px;
+  height: 15px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 999px;
+  transition: background 0.25s ease;
+}
+
+.custom-toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dropup-toggle-item input[type="checkbox"]:checked + .custom-toggle-slider {
+  background: #00E676;
+}
+
+.dropup-toggle-item input[type="checkbox"]:checked + .custom-toggle-slider::after {
+  transform: translateX(11px);
+}
+
+.toggle-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 500;
+  color: #555555;
+  letter-spacing: 0.03em;
+}
+
+/* Footer */
+footer {
+  position: relative;
+  z-index: 5;
+  margin-top: 64px;
+  padding: 32px;
+}
+
+.footer-line {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin-bottom: 24px;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  color: #9CA3AF;
+}
+
+.hidden { display: none !important; }
+
+/* ----------------------------- */
+/* TECHNICAL ANIMATIONS          */
+/* ----------------------------- */
+
+/* Fade-in for main components */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.content-wrapper {
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.data-card {
+  opacity: 0;
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.panel-column .data-card:nth-child(1) { animation-delay: 0.1s; }
+.panel-column .data-card:nth-child(2) { animation-delay: 0.2s; }
+.display-card { animation-delay: 0.3s; }
+
+/* Schematic Line Drawing */
+.s-line-draw {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  animation: drawLine 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.5s;
+}
+
+@keyframes drawLine {
+  to { stroke-dashoffset: 0; }
+}
+
+/* Technical Pulse */
+.s-dot {
+  animation: pulseTech 2s infinite ease-in-out;
+}
+
+@keyframes pulseTech {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Upload Interaction Hover */
+.upload-content:hover .upload-icon {
+  animation: targetLock 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  color: var(--green);
+}
+
+@keyframes targetLock {
+  0% { transform: scale(1); }
+  40% { transform: scale(0.85); }
+  100% { transform: scale(1.1); }
+}
+
+/* Button Hover Expansion */
+.btn-minimal {
+  transition: all 0.3s ease;
+}
+
+.btn-minimal:hover {
+  letter-spacing: 0.08em;
+}
+
+/* ==========================================================================
+   DEVICE-ADAPTIVE RESPONSIVE STYLING (TABLET, MOBILE & SMALL SCREENS)
+   ========================================================================== */
+
+/* TABLET VIEWPORT (681px - 1024px) */
+@media (max-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: 290px 1fr;
+    gap: 20px;
+  }
+  .content-wrapper {
+    padding: 24px 20px 48px 20px;
+  }
+  .flow-diagram {
+    height: 240px;
+    margin-bottom: 40px;
+  }
+  .data-card {
+    padding: 20px;
+    gap: 18px;
+  }
+}
+
+/* MOBILE BREAKPOINT (<= 860px) - SWITCH TO SINGLE COLUMN */
+@media (max-width: 860px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .panel-column {
+    gap: 18px;
+  }
+}
+
+/* SMARTPHONE & NARROW SCREENS (<= 680px) */
+@media (max-width: 680px) {
+  /* 1. Responsive Typography & Label Swapping: Show icons/compact tags */
+  .btn-text-desktop,
+  .node-label-desktop,
+  .tag-desktop,
+  .pill-text-desktop,
+  .chip-text-desktop,
+  .logs-text-desktop,
+  .dropup-text-desktop,
+  .btn-3d-text {
+    display: none !important;
+  }
+
+  .btn-text-mobile,
+  .node-label-mobile,
+  .tag-mobile,
+  .pill-text-mobile,
+  .chip-text-mobile,
+  .logs-text-mobile,
+  .dropup-text-mobile {
+    display: inline !important;
+  }
+
+  /* 2. Mobile Page Spacing */
+  .content-wrapper {
+    margin: 8px auto 0 auto;
+    padding: 8px 12px 36px 12px;
+  }
+
+  /* 3. Mobile Tactile Scan Action Button */
+  .btn-scan-3d {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    gap: 10px;
+    box-shadow: 0 4px 0 #000000, 0 8px 18px rgba(0, 0, 0, 0.3);
+  }
+  .btn-scan-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* 4. Mobile Sensor Flow Pipeline - Preserving Full 4-Node Connecting Diagram */
+  .flow-diagram {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    height: 180px;
+    margin: 4px auto 20px auto;
+    padding: 0;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+  }
+  .flow-svg {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .flow-nodes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+  }
+  /* 4. Mobile Sensor Flow Pipeline - Icon-Only Metallic 3D Badges */
+  .btn-3d-node {
+    position: absolute;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    gap: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 11px;
+    z-index: 15;
+  }
+  .btn-3d-text {
+    display: none !important;
+  }
+  .btn-3d-icon-badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    margin: 0;
+  }
+  .btn-3d-node .node-icon {
+    width: 14px;
+    height: 14px;
+  }
+  .node-metallic-gunmetal {
+    box-shadow: 0 3px 0 #0F172A, 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  .node-metallic-bronze {
+    box-shadow: 0 3px 0 #0A0806, 0 4px 10px rgba(0, 0, 0, 0.2);
+  }
+  .node-metallic-platinum {
+    box-shadow: 0 3px 0 #94A3B8, 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  .node-metallic-obsidian {
+    box-shadow: 0 3px 0 #000000, 0 4px 10px rgba(0, 0, 0, 0.28);
+  }
+  .flow-hub {
+    position: absolute;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+  .hub-ring {
+    display: block !important;
+    inset: -6px;
+    border-radius: 16px;
+  }
+  .hub-core {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+  }
+  .core-dots {
+    gap: 3px;
+  }
+  .c-dot {
+    width: 5px;
+    height: 5px;
+  }
+
+  /* 5. Mobile 3D Cards & Touch Ergonomics */
+  .data-card {
+    padding: 18px 14px;
+    gap: 16px;
+    border-radius: 16px;
+    box-shadow: 
+      0 1px 0 rgba(255, 255, 255, 0.95) inset,
+      0 -2px 0 rgba(0, 0, 0, 0.04) inset,
+      0 2px 4px rgba(0, 0, 0, 0.03),
+      0 6px 16px -2px rgba(0, 0, 0, 0.06);
+  }
+  .card-header {
+    padding-bottom: 12px;
+  }
+  .upload-content-3d {
+    padding: 20px 12px;
+    gap: 12px;
+    border-radius: 12px;
+  }
+  .upload-icon-chassis {
+    width: 42px;
+    height: 42px;
+  }
+  .upload-icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* 3D Parameter Console Mobile */
+  .param-hud-screen {
+    padding: 12px 12px;
+    gap: 8px;
+    border-radius: 12px;
+  }
+  .hud-main-val {
+    font-size: 24px;
+  }
+  .btn-nudge-3d {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+  .range-wrapper-3d {
+    height: 40px;
+  }
+  .range-wrapper-3d input[type="range"]::-webkit-slider-thumb {
+    width: 30px;
+    height: 30px;
+  }
+  .btn-preset-3d {
+    padding: 8px 2px;
+    font-size: 8px;
+    border-radius: 6px;
+  }
+
+  /* 6. Output Display Card */
+  .display-card .display-panel {
+    height: 280px;
+    min-height: 280px;
+  }
+  .apple-header-title .title-text {
+    font-size: 13px;
+  }
+  .apple-status-pills {
+    gap: 6px;
+  }
+  .apple-pill-green,
+  .apple-pill-orange {
+    padding: 4px 8px;
+    font-size: 9px;
+    border-radius: 12px;
+    gap: 4px;
+  }
+  .display-card .card-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+    padding-top: 12px;
+  }
+  .card-footer-chips {
+    display: flex;
+    justify-content: flex-start;
+    gap: 6px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .apple-footer-chip {
+    padding: 4px 8px;
+    font-size: 9px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  .attached-dropup-dock {
+    width: 100%;
+  }
+  .dropup-trigger {
+    width: 100%;
+    justify-content: center;
+    min-height: 42px;
+    font-size: 10.5px;
+    padding: 8px 14px;
+  }
+  .attached-dropup-panel {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    width: 100%;
+    max-width: 100%;
+    transform-origin: bottom center;
+    padding: 16px 14px;
+  }
+  .attached-dropup-panel::after {
+    right: 50%;
+    margin-right: -6px;
+  }
+
+  /* 7. Footer on Mobile */
+  footer {
+    margin-top: 28px;
+    padding: 16px 12px;
+  }
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    text-align: center;
+  }
+  .footer-logs-btn {
+    padding: 6px 14px;
+    background: var(--surface);
+    border: 1px solid var(--soft-line);
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    color: var(--ink);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* EXTRA SMALL MOBILE (<= 400px) */
+@media (max-width: 400px) {
+  .metallic-black-header {
+    padding: 24px 10px 28px 10px;
+    min-height: 240px;
+  }
+  .flow-nodes .tech-label {
+    padding: 4px 6px;
+    font-size: 8.5px;
+  }
+  .apple-footer-chip {
+    font-size: 8px;
+    padding: 3px 5px;
+  }
+}
+
+/* ==========================================================================
+   TOP-LEFT CORNER REAL BACKGROUND SPECTRUM ORB (54% EXPOSED // CENTER-TO-RADIUS)
+   ========================================================================== */
+
+.corner-bg-orb-system {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2; /* Sits on real background, behind content & header */
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  overflow: visible;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+
+/* Move to bottom-left corner with identical 54% exposure placement & smooth transition */
+.corner-bg-orb-system.is-bottom-left {
+  transform: translate3d(0, var(--orb-bottom-y, calc(100vh - 70px)), 0);
+  transform: translate3d(0, var(--orb-bottom-y, calc(100dvh - 70px)), 0);
+}
+
+.corner-bg-orb {
+  position: absolute;
+  top: -145px;
+  left: -145px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  pointer-events: auto;
+  cursor: pointer;
+  overflow: hidden;
+  border: 1.5px solid rgba(0, 0, 0, 0.15);
+  box-shadow: 
+    0 20px 50px rgba(0, 0, 0, 0.28),
+    0 6px 16px rgba(0, 0, 0, 0.15),
+    inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+  user-select: none;
+}
+
+.corner-bg-orb:hover {
+  transform: scale(1.03);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.35),
+    0 8px 24px rgba(0, 0, 0, 0.18),
+    inset 0 2px 0 rgba(255, 255, 255, 0.7);
+}
+
+.corner-bg-orb:active {
+  transform: scale(0.98);
+}
+
+/* Base Color Layer */
+.orb-layer-base {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: #000000;
+  z-index: 1;
+}
+
+/* Center-to-Radius Expanding Ripple Wave Layer */
+.orb-layer-ripple {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: 2;
+  clip-path: circle(0% at 50% 50%);
+  pointer-events: none;
+}
+
+.orb-layer-ripple.is-expanding {
+  animation: orbCenterRipple 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes orbCenterRipple {
+  0% {
+    clip-path: circle(0% at 50% 50%);
+  }
+  100% {
+    clip-path: circle(120% at 50% 50%);
+  }
+}
+
+/* Concentric Precision HUD Rings */
+.orb-rings-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.orb-svg-outer {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.25);
+  stroke-width: 1.5;
+  transition: stroke 0.4s ease;
+}
+
+.orb-svg-dashed {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
+  stroke-dasharray: 4 6;
+  animation: orbSpinSlow 90s linear infinite;
+  transform-origin: center;
+  transition: stroke 0.4s ease;
+}
+
+.orb-svg-solid {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.18);
+  stroke-width: 1;
+  transition: stroke 0.4s ease;
+}
+
+.orb-svg-core {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.12);
+  stroke-width: 1;
+  transition: stroke 0.4s ease;
+}
+
+.orb-svg-tick {
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 2;
+  stroke-linecap: round;
+  transition: stroke 0.4s ease;
+}
+
+@keyframes orbSpinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.orb-circular-text-group {
+  animation: orbTextSpin 15s linear infinite;
+  transform-origin: 180px 180px;
+}
+
+@keyframes orbTextSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.orb-circular-text {
+  font-family: 'DotGothic16', sans-serif;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  fill: #FFFFFF;
+  text-transform: uppercase;
+  /* Simulate 3D solid extrusion */
+  filter: drop-shadow(1px 1px 0px rgba(0, 0, 0, 0.9))
+          drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.7))
+          drop-shadow(3px 3px 0px rgba(0, 0, 0, 0.5));
+  transition: fill 0.4s ease;
+}
+
+/* Tablet & Mobile responsive positioning */
+@media (max-width: 680px) {
+  .corner-bg-orb {
+    top: -120px;
+    left: -120px;
+    width: 290px;
+    height: 290px;
+  }
+
+  .corner-bg-orb-system.is-bottom-left {
+    transform: translate3d(0, var(--orb-bottom-y, calc(100vh - 50px)), 0);
+    transform: translate3d(0, var(--orb-bottom-y, calc(100dvh - 50px)), 0);
+  }
+}
+
+/* ==========================================================================
+   ANALYZED OUTPUT IMAGE FULL VIEW LIGHTBOX TERMINAL (3D FLIP & UPSCALE)
+   ========================================================================== */
+
+/* Full View Trigger Pill in Card Header */
+.apple-pill-fullview {
+  background: #FFFFFF;
+  border: 1.5px solid #CBD5E1;
+  color: #0F172A;
+  border-radius: 14px;
+  padding: 5px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 0 #94A3B8;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.apple-pill-fullview.is-ready {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.apple-pill-fullview.is-ready:hover {
+  background: #0F172A;
+  color: #FFFFFF;
+  border-color: #0F172A;
+  box-shadow: 0 2px 0 #000000;
+  transform: translateY(-1px);
+}
+
+.apple-pill-fullview.is-ready:active {
+  transform: translateY(1px);
+  box-shadow: 0 0 0 transparent;
+}
+
+/* Floating Expand Hint on Output Image Hover */
+.output-expand-hint {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 25;
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  padding: 6px 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #FFFFFF;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateY(-4px) scale(0.95);
+  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), background 0.2s ease;
+  pointer-events: none;
+}
+
+.display-panel:hover .output-expand-hint.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.output-expand-hint:hover {
+  background: #00E676;
+  color: #000000;
+  border-color: #00E676;
+  box-shadow: 0 0 16px rgba(0, 230, 118, 0.4);
+}
+
+/* Cursor indicator on loaded image */
+#output-image:not(.hidden) {
+  cursor: zoom-in;
+}
+
+/* Modal Overlay Container */
+.image-fullview-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.38s ease;
+}
+
+.image-fullview-modal.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.image-fullview-modal.is-closing {
+  opacity: 0;
+  pointer-events: none;
+  visibility: visible;
+}
+
+/* Blurred Backdrop with Frosted White Blur Color & Tactile Texture (Click/Touch outside closes) */
+.fullview-backdrop {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.48) 0%, rgba(235, 243, 255, 0.36) 38%, rgba(15, 23, 42, 0.62) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(15, 23, 42, 0.5) 100%);
+  backdrop-filter: blur(36px) saturate(2.0) brightness(1.12);
+  -webkit-backdrop-filter: blur(36px) saturate(2.0) brightness(1.12);
+  cursor: zoom-out;
+}
+
+/* Tactile Frosted Noise Texture on Backdrop */
+.fullview-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.65) 1px, transparent 1px),
+    radial-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 1px);
+  background-size: 16px 16px, 8px 8px;
+  background-position: 0 0, 4px 4px;
+  opacity: 0.38;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+
+/* 3D Page Flip / Upscaling Dialog Card — Apple Luxury Frosted White Glass */
+.fullview-dialog {
+  position: relative;
+  z-index: 2;
+  width: auto;
+  max-width: 94vw;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  
+  /* White Blur Texture & Glassmorphism like Top Heading */
+  background: 
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72) 0%, rgba(255, 255, 255, 0.45) 45%, rgba(255, 255, 255, 0.28) 100%),
+    radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.75) 0%, transparent 70%);
+  background-color: rgba(255, 255, 255, 0.38);
+  
+  /* Deep Frosted Blur */
+  backdrop-filter: blur(38px) saturate(2.2) brightness(1.16);
+  -webkit-backdrop-filter: blur(38px) saturate(2.2) brightness(1.16);
+  
+  /* Multi-bevel White Specular Rim */
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-radius: 22px;
+  box-shadow: 
+    0 35px 80px -15px rgba(0, 0, 0, 0.35),
+    0 15px 35px -8px rgba(0, 0, 0, 0.2),
+    0 0 45px rgba(255, 255, 255, 0.5),
+    inset 0 2px 2px 0 rgba(255, 255, 255, 1),
+    inset 0 -2px 2px 0 rgba(0, 0, 0, 0.08);
+    
+  padding: 16px 20px 14px 20px;
+  gap: 12px;
+  box-sizing: border-box;
+  transform-style: preserve-3d;
+  
+  /* Initial 3D Flip & Scaled-down State */
+  transform: perspective(1600px) rotateX(24deg) rotateY(-6deg) scale(0.68) translateY(45px);
+  opacity: 0;
+  filter: blur(8px);
+  transform-origin: center center;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease, filter 0.28s ease;
+  user-select: none;
+}
+
+/* Specular Caustic Sheen Sweep Animation (Matching Top Heading Glass) */
+.fullview-dialog::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: -150%;
+  width: 250%;
+  height: 220%;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(255, 255, 255, 0.3) 46%,
+    rgba(255, 255, 255, 0.85) 50%,
+    rgba(255, 255, 255, 0.3) 54%,
+    transparent 62%,
+    transparent 100%
+  );
+  transform: rotate(12deg);
+  pointer-events: none;
+  z-index: 1;
+  animation: fullviewSheenSweep 5.5s infinite cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fullviewSheenSweep {
+  0% {
+    left: -150%;
+  }
+  32%, 100% {
+    left: 150%;
+  }
+}
+
+/* Tactile Micro-Grain Frosted Texture on Glass Card */
+.fullview-dialog::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(rgba(255, 255, 255, 0.7) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+  background-size: 14px 14px, 7px 7px, 7px 7px;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+  border-radius: inherit;
+  mix-blend-mode: overlay;
+}
+
+/* Opened State: Smooth 3D Upscale & Leveling */
+.image-fullview-modal.is-open .fullview-dialog {
+  transform: perspective(1600px) rotateX(0deg) rotateY(0deg) scale(1) translateY(0);
+  opacity: 1;
+  filter: blur(0px);
+  transition: transform 0.55s cubic-bezier(0.34, 1.25, 0.64, 1), opacity 0.38s cubic-bezier(0.16, 1, 0.3, 1), filter 0.38s ease;
+}
+
+/* Closing State: 3D Flip Out */
+.image-fullview-modal.is-closing .fullview-dialog {
+  transform: perspective(1600px) rotateX(-16deg) rotateY(4deg) scale(0.76) translateY(35px);
+  opacity: 0;
+  filter: blur(6px);
+  transition: transform 0.32s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease, filter 0.28s ease;
+}
+
+/* Full View HUD Header */
+.fullview-hud-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.55);
+  padding-bottom: 10px;
+  gap: 12px;
+}
+
+.fullview-hud-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.fullview-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: 0.06em;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06), inset 0 1px 1px #FFFFFF;
+}
+
+.fullview-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #00E676;
+  box-shadow: 0 0 10px #00E676;
+}
+
+.fullview-meta-chip {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* 3D Tactile Close Button */
+.fullview-close-btn {
+  background: #0F172A;
+  color: #FFFFFF;
+  border: 1.5px solid #1E293B;
+  border-radius: 8px;
+  padding: 6px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  box-shadow: 0 2px 0 #020617, 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.fullview-close-btn:hover {
+  background: #EF4444;
+  color: #FFFFFF;
+  border-color: #EF4444;
+  box-shadow: 0 2px 0 #B91C1C, 0 6px 16px rgba(239, 68, 68, 0.4);
+  transform: translateY(-1px);
+}
+
+.fullview-close-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 0 0 transparent;
+}
+
+/* 3D Image Chassis Frame */
+.fullview-image-chassis {
+  position: relative;
+  z-index: 2;
+  background: #020617;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 90vw;
+  max-height: 74vh;
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.25),
+    inset 0 0 25px rgba(0, 0, 0, 0.85);
+}
+
+.fullview-img {
+  display: block;
+  max-width: 88vw;
+  max-height: 72vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 10px;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Tactical Corner Brackets */
+.fullview-corner-bracket {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.fullview-corner-bracket.tl {
+  top: 8px;
+  left: 8px;
+  border-top: 2px solid #FF6B00;
+  border-left: 2px solid #FF6B00;
+}
+
+.fullview-corner-bracket.tr {
+  top: 8px;
+  right: 8px;
+  border-top: 2px solid #FF6B00;
+  border-right: 2px solid #FF6B00;
+}
+
+.fullview-corner-bracket.bl {
+  bottom: 8px;
+  left: 8px;
+  border-bottom: 2px solid #00E676;
+  border-left: 2px solid #00E676;
+}
+
+.fullview-corner-bracket.br {
+  bottom: 8px;
+  right: 8px;
+  border-bottom: 2px solid #00E676;
+  border-right: 2px solid #00E676;
+}
+
+/* Bottom Strip */
+.fullview-hud-footer {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+  gap: 12px;
+}
+
+.fullview-hint-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  color: #334155;
+  letter-spacing: 0.06em;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.fullview-hint-text kbd {
+  background: rgba(255, 255, 255, 0.65);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.95);
+  color: #0F172A;
+  font-weight: 700;
+  font-size: 8.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.fullview-action-btn {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.9);
+  color: #0F172A;
+  border-radius: 7px;
+  padding: 5px 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08), inset 0 1px 1px #FFFFFF;
+  transition: all 0.2s ease;
+}
+
+.fullview-action-btn:hover {
+  background: #00E676;
+  color: #000000;
+  border-color: #00E676;
+  box-shadow: 0 0 16px rgba(0, 230, 118, 0.45);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 680px) {
+  .image-fullview-modal {
+    padding: 10px;
+  }
+  .fullview-dialog {
+    padding: 12px 10px;
+    max-width: 98vw;
+    gap: 8px;
+  }
+  .fullview-img {
+    max-width: 94vw;
+    max-height: 64vh;
+  }
+  .fullview-meta-chip,
+  .fullview-hint-text {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   PRODUCTION HARDENING: TACTICAL SYSTEM ERROR BANNER
+   ========================================================================== */
+.system-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255, 23, 68, 0.08);
+  border: 1px solid rgba(255, 23, 68, 0.35);
+  border-left: 4px solid #FF1744;
+  border-radius: 8px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  margin-bottom: 12px;
+  box-shadow: 0 4px 16px rgba(255, 23, 68, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  animation: errorBannerSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  z-index: 10;
+}
+
+.system-error-banner.hidden {
+  display: none !important;
+}
+
+@keyframes errorBannerSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.error-banner-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 23, 68, 0.15);
+  border: 1px solid rgba(255, 23, 68, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FF1744;
+}
+
+.error-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.error-banner-title {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #FF1744;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-banner-code {
+  display: inline-block;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 23, 68, 0.2);
+  color: #D50000;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.error-banner-text {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10.5px;
+  color: #334155;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.error-banner-close {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  color: #64748B;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-banner-close:hover {
+  color: #FF1744;
+  background: rgba(255, 23, 68, 0.1);
+}
+
+
+
