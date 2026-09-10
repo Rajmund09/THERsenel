@@ -174,34 +174,47 @@ Evaluated on **Aug 31, 2026** using `python src/evaluation/evaluate_models.py`.
 
 ---
 
-## 📸 Visual Showcase & Interactive Terminal Screenshots
+## 📸 Visual Showcase & Multi-Platform UI/UX Terminal Views
 
+### 🖥️ 1. Production Desktop Edge Surveillance Terminal
 <p align="center">
-  <img src="data/samples/web_dashboard_preview.png" alt="Thermal-Visible Border Intrusion Interactive Surveillance Terminal" width="950" height="627" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
+  <img src="data/samples/web_dashboard_preview.png" alt="Thermal-Visible Border Intrusion Interactive Surveillance Terminal" width="950" height="594" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
 </p>
 <p align="center">
-  <em>Figure 4: Production Edge Web Surveillance Terminal featuring 4D Metallic Board, LiquidChrome WebGL Shader, and Real-Time Intrusion Feeds (1440 × 950 px).</em>
+  <em>Figure 4: Full Desktop Surveillance Terminal featuring 4D Metallic Board, LiquidChrome WebGL Shaders, 2-Tone Perception Cards, and CrossDither Halftone System (1440 × 900 px).</em>
 </p>
 
+### 🎛️ 2. Attached Sensory Telemetry & Multi-Spectral Palettes Dock
 <p align="center">
   <img src="data/samples/telemetry_spectral_dock.png" alt="Sensory Telemetry and Multi-Spectral Color LUT Dropup Dock" width="950" height="594" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
 </p>
 <p align="center">
-  <em>Figure 5: Attached Sensory Telemetry & Spectral Modes Dropup Dock — Atmospheric & Core Sensors with Live Spectral Palettes (1440 × 900 px).</em>
+  <em>Figure 5: Sliding Sensory Telemetry Dock — Live atmospheric sensors, thermal peak metrics, and 6 real-time color LUT palettes (Dual Fusion, White-Hot, Ironbow, Rainbow, Enhanced RGB) (1440 × 900 px).</em>
 </p>
 
+### 🔍 3. Frosted White Glass 3D Full-View Lightbox Terminal (Current Design)
 <p align="center">
-  <img src="data/samples/fullview_modal_preview.png" alt="Frosted White Glass 3D Full-View Lightbox Terminal" width="850" height="488" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
+  <img src="data/samples/fullview_modal_preview.png" alt="Frosted White Glass 3D Full-View Lightbox Terminal" width="950" height="594" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
 </p>
 <p align="center">
-  <em>Figure 6: High-Resolution 3D Full-View Lightbox Terminal with Frosted White Glassmorphism, Specular Caustic Sheen, and Touch-Out Dismissal (1024 × 588 px).</em>
+  <em>Figure 6: High-Resolution 3D Full-View Lightbox with Frosted White Glassmorphism (`blur(38px)`), Specular Caustic Sheen Sweeps, Micro-Grain Texture, and Touch-Out Dismissal (1440 × 900 px).</em>
 </p>
 
+### 📱 4. Mobile Responsive Multi-Device Views
+<p align="center">
+  <img src="data/samples/ui_mobile_view.png" alt="Mobile Top View with Collision-Aware 3D Badge" width="460" height="995" style="max-width: 48%; height: auto; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.45); display: inline-block; margin-right: 2%;" />
+  <img src="data/samples/ui_mobile_controls.png" alt="Mobile Perception and Calibration Controls" width="460" height="995" style="max-width: 48%; height: auto; border-radius: 12px; box-shadow: 0 15px 35px rgba(0,0,0,0.45); display: inline-block;" />
+</p>
+<p align="center">
+  <em>Figure 7: Responsive Mobile Views (390 × 844 px) — (Left) Fluid Header with 3D Orbiting Badge dynamically gliding to bottom-left corner on collision. (Right) Tactile Confidence Slider, Preset Chips, and Live Feed Monitoring Card.</em>
+</p>
+
+### 🎯 5. Real-Time Polygon Border Breach Detection Result
 <p align="center">
   <img src="data/samples/intrusion_output.jpg" alt="Polygon ROI Border Breach Detection Result" width="950" height="770" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
 </p>
 <p align="center">
-  <em>Figure 7: Real-Time Polygon Border Breach Detection Result with Ray-Casting Intrusion Flagging and Dual-Modality Fusion (1920 × 1556 px).</em>
+  <em>Figure 8: Real-Time Multi-Target Polygon Border Breach Detection with Ray-Casting Intrusion Flagging and Dual-Modality Fusion (1920 × 1556 px).</em>
 </p>
 
 ---
@@ -217,15 +230,18 @@ thermal-border-intrusion/
 ├── data/                     # Dataset storage
 │   ├── raw/FLIR/             # Original untouched FLIR ADAS dataset
 │   ├── processed/            # Preprocessed train/val/test splits (YOLO format)
-│   └── samples/              # Preview image grids & training result plots
-│       ├── rgb_thermal_preview.png
-│       ├── rgb_baseline_results.png
-│       ├── rgb_baseline_pr_curve.png
-│       ├── rgb_baseline_detections.jpg
-│       ├── thermal_baseline_results.png
-│       ├── thermal_baseline_pr_curve.png
-│       ├── thermal_baseline_detections.jpg
-│       └── intrusion_output.jpg
+│   └── samples/              # UI/UX screenshots, preview grids & evaluation plots
+│       ├── web_dashboard_preview.png    # Desktop Surveillance Terminal (1440x900)
+│       ├── telemetry_spectral_dock.png  # Telemetry & Spectral Modes Dropup (1440x900)
+│       ├── fullview_modal_preview.png   # Frosted White Glass Full-View Modal (1440x900)
+│       ├── ui_mobile_view.png           # Mobile Top View with Collision Badge (390x844)
+│       ├── ui_mobile_controls.png       # Mobile Controls & Feed View (390x844)
+│       ├── rgb_thermal_preview.png      # Multimodal dataset grid
+│       ├── rgb_baseline_results.png     # RGB training loss & mAP curves
+│       ├── rgb_baseline_pr_curve.png    # RGB PR curve
+│       ├── thermal_baseline_results.png # Thermal training loss & mAP curves
+│       ├── thermal_baseline_pr_curve.png# Thermal PR curve
+│       └── intrusion_output.jpg         # Full-resolution detection result (1920x1556)
 ├── notebooks/                # Jupyter exploration & experiment notebooks
 │   ├── 01_dataset_exploration.ipynb
 │   ├── 02_preprocessing.ipynb
