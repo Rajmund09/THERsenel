@@ -178,10 +178,10 @@ Evaluated on **Aug 31, 2026** using `python src/evaluation/evaluate_models.py`.
 
 ### 🖥️ 1. Production Desktop Edge Surveillance Terminal
 <p align="center">
-  <img src="data/samples/web_dashboard_preview.png" alt="Thermal-Visible Border Intrusion Interactive Surveillance Terminal" width="950" height="594" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
+  <img src="data/samples/web_dashboard_preview.png" alt="Thermal-Visible Border Intrusion Interactive Surveillance Terminal" width="950" height="452" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
 </p>
 <p align="center">
-  <em>Figure 4: Full Desktop Surveillance Terminal featuring 4D Metallic Board, LiquidChrome WebGL Shaders, 2-Tone Perception Cards, and CrossDither Halftone System (1440 × 900 px).</em>
+  <em>Figure 4: Production Desktop Surveillance Terminal featuring 4D Metallic Board, LiquidChrome WebGL Shaders, 3D Orbiting Cylindrical Badges, and CrossDither Halftone System (1024 × 487 px).</em>
 </p>
 
 ### 🎛️ 2. Attached Sensory Telemetry & Multi-Spectral Palettes Dock
@@ -231,7 +231,7 @@ thermal-border-intrusion/
 │   ├── raw/FLIR/             # Original untouched FLIR ADAS dataset
 │   ├── processed/            # Preprocessed train/val/test splits (YOLO format)
 │   └── samples/              # UI/UX screenshots, preview grids & evaluation plots
-│       ├── web_dashboard_preview.png    # Desktop Surveillance Terminal (1440x900)
+│       ├── web_dashboard_preview.png    # Desktop Surveillance Terminal (1024x487)
 │       ├── telemetry_spectral_dock.png  # Telemetry & Spectral Modes Dropup (1440x900)
 │       ├── fullview_modal_preview.png   # Frosted White Glass Full-View Modal (1440x900)
 │       ├── ui_mobile_view.png           # Mobile Top View with Collision Badge (390x844)
