@@ -25,8 +25,9 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 | **M6** | End-to-end YOLOv8 + Fusion integration & loss functions | ✅ **Completed** | Dual-stream architecture trained. Checkpoint: `fusion_best.pt` |
 | **M7** | Scientific evaluation & Day vs. Night comparative mAP benchmarking | ✅ **Completed** | Fusion achieved 89.4% mAP50 across day and night! |
 | **M8** | Polygon ROI definition & multi-object tracking integration | ✅ **Completed** | Ray-casting ROI breach engine & multi-object tracker built |
-| **M9** | Real-time dual-video/camera intrusion inference application | ✅ **Completed** | Predictor, video stream engine, & live camera reader built |
-| **M10** | ONNX export, TensorRT FP16 optimization, & Jetson Xavier benchmarking | ⏳ **Pending** | Post-training ONNX export & TensorRT engine compilation |
+| **M9** | Production Edge Web Terminal & Tactical Surveillance GUI | ✅ **Completed** | FastAPI ASGI microservice, WebGL LiquidChrome, glassmorphism, sensory telemetry, & 3D full-view lightbox |
+| **M10** | Historical Forensic Database & Real-Time Sensor Telemetry Logging | ✅ **Completed** | Persistent forensic event logging, spectral LUT modes, & audit trail |
+| **M11** | ONNX export, TensorRT FP16 optimization, & Jetson Xavier benchmarking | ⏳ **Pending** | Post-training ONNX export & TensorRT engine compilation |
 
 ---
 
@@ -35,7 +36,7 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 ### 📅 Phase 1: Modular Repository Architecture & Environment Setup (Aug 27–28, 2026)
 - **Goal**: Build a professional, production-grade 6-layer project structure matching `Automated Border Intrusion Detection Using Thermal–Visible Fusion.pdf`.
 - **Delivered**:
-  - Created [`setup.py`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/setup.py), [`environment.yml`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/environment.yml), [`requirements.txt`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/requirements.txt), and `.gitignore`.
+  - Created [`setup.py`](setup.py), [`environment.yml`](environment.yml), [`requirements.txt`](requirements.txt), and `.gitignore`.
   - Built modular subsystems under `src/`: `src/data/`, `src/models/`, `src/training/`, `src/evaluation/`, `src/inference/`, and `src/intrusion/`.
   - Built 6 template Jupyter notebooks (`notebooks/01_dataset_exploration.ipynb` through `06_evaluation.ipynb`).
 
@@ -48,11 +49,11 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
   - **21,060 Training Images** (`10,318 RGB` + `10,742 Thermal`)
   - **2,229 Validation Images** (`1,085 RGB` + `1,144 Thermal`)
   - **7,498 Test Images** (`3,749 RGB` + `3,749 Thermal`)
-  - Total **30,787 preprocessed images and labels** written to [`data/processed/`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/data/processed/).
+  - Total **30,787 preprocessed images and labels** written to [`data/processed/`](data/processed/).
   - Generated `labels.cache` for instant sub-millisecond dataset loading.
 
 <p align="center">
-  <img src="data/samples/rgb_thermal_preview.png" alt="FLIR Thermal and RGB Multimodal Dataset Grid" width="95%" />
+  <img src="data/samples/rgb_thermal_preview.png" alt="FLIR Thermal and RGB Multimodal Dataset Grid" width="950" height="534" style="max-width: 100%; height: auto; border-radius: 8px;" />
 </p>
 <p align="center">
   <em>Figure 1: Synchronized FLIR Visual (RGB) and Thermal Infrared Pair Samples from the Preprocessed Dataset.</em>
@@ -77,11 +78,11 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 - **Execution Log**:
   - **Total Training Duration**: **`6.013 Hours`** (50 Epochs completed)
   - **Hardware Used**: NVIDIA GeForce RTX 3050 4GB Laptop GPU (AMP Enabled, CUDA 12.1)
-  - **Saved Weights**: [`runs/rgb_baseline/rgb_yolov8/weights/best.pt`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/runs/rgb_baseline/rgb_yolov8/weights/best.pt) *(Size: 6.2 MB)*
+  - **Saved Weights**: [`runs/rgb_baseline/rgb_yolov8/weights/best.pt`](runs/rgb_baseline/rgb_yolov8/weights/best.pt) *(Size: 6.2 MB)*
 
 <p align="center">
-  <img src="data/samples/rgb_baseline_results.png" alt="RGB Baseline 50-Epoch Training Metrics & Loss Curves" width="48%" />
-  <img src="data/samples/rgb_baseline_pr_curve.png" alt="Precision-Recall Curve" width="48%" />
+  <img src="data/samples/rgb_baseline_results.png" alt="RGB Baseline 50-Epoch Training Metrics & Loss Curves" width="460" height="460" style="max-width: 48%; height: auto; border-radius: 6px;" />
+  <img src="data/samples/rgb_baseline_pr_curve.png" alt="Precision-Recall Curve" width="460" height="460" style="max-width: 48%; height: auto; border-radius: 6px;" />
 </p>
 <p align="center">
   <em>Figure 2: (Left) 50-Epoch Training Loss & mAP Convergence Curves. (Right) Class-wise Precision-Recall (PR) Curve on RGB Visual Validation Set.</em>
@@ -95,11 +96,11 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 - **Execution Log**:
   - **Total Training Duration**: **`6.065 Hours`** (50 Epochs completed)
   - **Hardware Used**: NVIDIA GeForce RTX 3050 4GB Laptop GPU (AMP Enabled, CUDA 12.1)
-  - **Saved Weights**: [`runs/thermal_baseline/thermal_yolov8/weights/best.pt`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/runs/thermal_baseline/thermal_yolov8/weights/best.pt) *(Size: 6.2 MB)*
+  - **Saved Weights**: [`runs/thermal_baseline/thermal_yolov8/weights/best.pt`](runs/thermal_baseline/thermal_yolov8/weights/best.pt) *(Size: 6.2 MB)*
 
 <p align="center">
-  <img src="data/samples/thermal_baseline_results.png" alt="Thermal Baseline 50-Epoch Training Metrics & Loss Curves" width="48%" />
-  <img src="data/samples/thermal_baseline_pr_curve.png" alt="Thermal Precision-Recall Curve" width="48%" />
+  <img src="data/samples/thermal_baseline_results.png" alt="Thermal Baseline 50-Epoch Training Metrics & Loss Curves" width="460" height="460" style="max-width: 48%; height: auto; border-radius: 6px;" />
+  <img src="data/samples/thermal_baseline_pr_curve.png" alt="Thermal Precision-Recall Curve" width="460" height="460" style="max-width: 48%; height: auto; border-radius: 6px;" />
 </p>
 <p align="center">
   <em>Figure 3: (Left) 50-Epoch Thermal Training Loss & mAP Convergence Curves. (Right) Class-wise Precision-Recall (PR) Curve on Thermal Validation Set.</em>
@@ -112,7 +113,7 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 - **Executed Command**: `python src/training/train_fusion.py --epochs 50 --batch 16 --lr 0.001`
 - **Execution Log**:
   - **Loss Convergence**: Dropped efficiently from `0.5000` (Epoch 1) to `0.0100` (Epoch 50).
-  - **Saved Weights**: [`weights/fusion_best.pt`](file:///c:/Users/prabh/Downloads/thermal-border-intrusion/thermal-border-intrusion/weights/fusion_best.pt)
+  - **Saved Weights**: [`weights/fusion_best.pt`](weights/fusion_best.pt)
 
 #### 🏆 Scientific Evaluation Benchmark Results
 Evaluated on **Aug 31, 2026** using `python src/evaluation/evaluate_models.py`.
@@ -138,6 +139,70 @@ Evaluated on **Aug 31, 2026** using `python src/evaluation/evaluate_models.py`.
 - **Executed Command**: `python src/inference/predict.py --image data/samples/rgb_baseline_detections.jpg`
 - **Result**: Successfully integrated. Bounding boxes highlight objects in **Green** (Safe) and switch to **Red [ALERT]** instantly if the target coordinate breaches the custom restricted polygon region.
 - **Status**: 100% Functional. Codebase is completely prepared for hardware export.
+
+---
+
+### 📅 Phase 8: Edge FastAPI Microservice & Asynchronous Tensor Fusion (Sep 2–6, 2026)
+- **Goal**: Transition from standalone CLI inference scripts to a production-grade, asynchronous ASGI edge web service supporting live operator interaction and zero-latency stream handling.
+- **Delivered**:
+  - Built high-performance asynchronous RESTful microservice in [`src/inference/api.py`](src/inference/api.py) using **FastAPI** and **Uvicorn**.
+  - Engineered `/predict` endpoint supporting multi-part image uploads, dynamic confidence thresholding (`conf_threshold`), and automatic dual-modality tensor registration.
+  - Implemented real-time intrusion header telemetry (`X-Alerts-Count`) for seamless zero-latency front-end synchronization.
+  - Developed historical forensic event logging API (`/history` and `/logs`) linking intrusion timestamps, bounding coordinates, and confidence metadata.
+
+---
+
+### 📅 Phase 9: Tactical Frosted Glass UI, Dynamic 3D Orbiting Badges, Sensor Telemetry & Full-View Lightbox Terminal (Sep 7–10, 2026)
+- **Goal**: Design and implement a state-of-the-art, military-spec Apple-luxury tactical web terminal with fluid physics, kinetic shaders, and deep sensory controls.
+- **Delivered Upgrades & Key Features**:
+  1. 🪟 **Tactile 4D Board & Paper Underlayer**: Built a physical 4D chamfered SVG border frame with debossed scorelines, fold seams, and brass mounting rivets.
+  2. 🌊 **LiquidChrome WebGL Shader Engine**: Interactive Three.js-powered liquid chrome fluid canvas with real-time mouse-reactive wave dynamics and chromatic dispersion.
+  3. 💎 **Apple-Grade GlassSurface with Caustic Sheen**: Multi-layer frosted glassmorphism (`GlassSurface`) with SVG displacement mapping (`feDisplacementMap`), refractive caustics, and dynamic traveling specular sheen sweeps.
+  4. 🛰️ **CrossDither Halftone System**: Hardware-accelerated HTML5 canvas mathematical dither matrix rendering tactical radar aesthetics.
+  5. 🔄 **Pixel Swap Engine**: Canvas-based monochrome block wipe and pixel blanket reveal during inference tensor computation.
+  6. 📊 **Attached Sensory Telemetry & Multi-Spectral Palettes**:
+     - Live simulated sensors: Thermal IR Core Temperature, Atmospheric Transmission, Hardware Latency, and Optical Focal Length.
+     - 6 Real-time Spectral LUT color palettes: White Hot, Black Hot, Ironbow, Rainbow, Night Vision, and Dual-Band Fusion overlay.
+  7. 🌀 **3D Cylindrical Orbiting Badges with Collision Avoidance**:
+     - Dynamic text (`VISION // THERMAL // DETECTION // INFINITE`) flowing along cylindrical 3D tracks with smooth responsive collision detection that glides between top-left and bottom-left on tablet/mobile screens.
+  8. 🔍 **Frosted White Glass 3D Full-View Lightbox Terminal**:
+     - Smooth 3D page flip and upscaling animation (`perspective(1600px) rotateX(24deg) -> 0deg` via `cubic-bezier(0.34, 1.25, 0.64, 1)`).
+     - Frosted white glass blur texture (`backdrop-filter: blur(38px) saturate(2.2)`), multi-bevel white specular rim, traveling caustic sheen, and micro-grain optical dot mesh.
+     - Multi-channel dismiss: touch/click outside backdrop blur, dedicated 3D tactile close button, and <kbd>Esc</kbd> key support with automatic Lenis scroll-locking.
+     - Direct lossless image download action and dimension telemetry chip.
+  9. 📁 **Forensic Sensor Logs & Gallery (`gallery.html`)**: Interactive audit gallery displaying historical detection snapshots, intrusion alerts, and confidence scores.
+
+---
+
+## 📸 Visual Showcase & Interactive Terminal Screenshots
+
+<p align="center">
+  <img src="data/samples/web_dashboard_preview.png" alt="Thermal-Visible Border Intrusion Interactive Surveillance Terminal" width="950" height="627" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
+</p>
+<p align="center">
+  <em>Figure 4: Production Edge Web Surveillance Terminal featuring 4D Metallic Board, LiquidChrome WebGL Shader, and Real-Time Intrusion Feeds (1440 × 950 px).</em>
+</p>
+
+<p align="center">
+  <img src="data/samples/telemetry_spectral_dock.png" alt="Sensory Telemetry and Multi-Spectral Color LUT Dropup Dock" width="950" height="594" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
+</p>
+<p align="center">
+  <em>Figure 5: Attached Sensory Telemetry & Spectral Modes Dropup Dock — Atmospheric & Core Sensors with Live Spectral Palettes (1440 × 900 px).</em>
+</p>
+
+<p align="center">
+  <img src="data/samples/fullview_modal_preview.png" alt="Frosted White Glass 3D Full-View Lightbox Terminal" width="850" height="488" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
+</p>
+<p align="center">
+  <em>Figure 6: High-Resolution 3D Full-View Lightbox Terminal with Frosted White Glassmorphism, Specular Caustic Sheen, and Touch-Out Dismissal (1024 × 588 px).</em>
+</p>
+
+<p align="center">
+  <img src="data/samples/intrusion_output.jpg" alt="Polygon ROI Border Breach Detection Result" width="950" height="770" style="max-width: 100%; height: auto; border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);" />
+</p>
+<p align="center">
+  <em>Figure 7: Real-Time Polygon Border Breach Detection Result with Ray-Casting Intrusion Flagging and Dual-Modality Fusion (1920 × 1556 px).</em>
+</p>
 
 ---
 
@@ -190,10 +255,18 @@ thermal-border-intrusion/
 │   │   ├── evaluate_models.py# Model evaluation & comparative benchmark suite
 │   │   ├── metrics.py        # IoU, AP, mAP@50, Precision, & Recall calculation
 │   │   └── visualization.py  # Plotting comparative charts & detection overlays
-│   ├── inference/            # Real-time inference engines
+│   ├── inference/            # Real-time inference engines & web GUI
+│   │   ├── api.py            # FastAPI ASGI edge microservice (/predict, /history)
 │   │   ├── predict.py        # Single image / frame real-time inference launcher
 │   │   ├── video.py          # Dual video file stream processing engine
-│   │   └── camera.py         # Live Webcam / RTSP / Jetson CSI camera reader
+│   │   ├── camera.py         # Live Webcam / RTSP / Jetson CSI camera reader
+│   │   └── static/           # Tactical Edge Surveillance Web Terminal
+│   │       ├── index.html    # 4D board, LiquidChrome, GlassSurface HUD
+│   │       ├── style.css     # Luxury glassmorphism, 3D flip animations, & dark mode
+│   │       ├── app.js        # Event controller, telemetry, & full-view lightbox
+│   │       ├── pixel-swap.js # Hardware-accelerated canvas block wipe engine
+│   │       ├── gallery.html  # Forensic event history & snapshot log database
+│   │       └── components/   # Modular WebGL shaders, dither, & glass surfaces
 │   └── intrusion/            # Security border intrusion logic
 │       ├── border_tracker.py # Ray-Casting algorithm for polygon border breach test
 │       ├── roi.py            # ROI polygon manager & overlay painter
@@ -266,6 +339,12 @@ python src/inference/predict.py --image data/samples/rgb_baseline_detections.jpg
 ```
 > *Status: ✅ Completed! Loads models, runs real-time fusion detection, object tracking, polygon ROI border crossing tests, and triggers visual alerts.*
 
+### 6️⃣ Launch Edge FastAPI Web Surveillance Terminal (Milestones M9 & M10 — Completed)
+```powershell
+python -m uvicorn src.inference.api:app --reload --host 127.0.0.1 --port 8000
+```
+> *Status: ✅ Completed! Launches the military-spec tactical web application. Navigate to `http://127.0.0.1:8000` to interact with the real-time thermal-visible fusion dashboard, multi-spectral dropup dock, forensic event gallery, and 3D full-view lightbox.*
+
 ---
 
 ## 📌 Citation & References
@@ -274,3 +353,4 @@ python src/inference/predict.py --image data/samples/rgb_baseline_detections.jpg
 - Ultralytics YOLOv8 Architecture
 - PyTorch Deep Learning Framework (CUDA 12.1)
 - NVIDIA TensorRT & Jetson Xavier Platform
+
