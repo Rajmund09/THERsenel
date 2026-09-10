@@ -1,0 +1,21 @@
+# ===========================================================================
+# THERsenel - Lightweight Cloud Deployment Dependencies (CPU Optimized)
+# ===========================================================================
+
+--extra-index-url https://download.pytorch.org/whl/cpu
+
+# PyTorch & Torchvision (Lightweight CPU Wheels)
+torch>=2.1.0
+torchvision>=0.16.0
+
+# Computer Vision & Deep Learning Engine
+ultralytics>=8.1.0
+opencv-python-headless>=4.9.0
+numpy>=1.26.0
+Pillow>=10.2.0
+PyYAML>=6.0.1
+
+# Production Web API & Streaming Server
+fastapi>=0.110.0
+uvicorn>=0.27.0
+python-multipart>=0.0.9
