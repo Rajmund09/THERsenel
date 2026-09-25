@@ -274,8 +274,8 @@
                             </svg>
                         </div>
                         <div class="upload-text-group">
-                            <p class="tech-text upload-heading">DRAG &amp; DROP IMAGERY</p>
-                            <span class="upload-subtext">DUAL VIS / LWIR FEED READY</span>
+                            <p class="tech-text upload-heading">DRAG &amp; DROP IMAGERY / VIDEO</p>
+                            <span class="upload-subtext">DUAL VIS / LWIR / MP4 FEED READY</span>
                         </div>
                         <button class="btn-scan-3d" id="scan-button" aria-label="Initialize Detection Scan">
                             <span class="btn-scan-beam"></span>
@@ -287,7 +287,7 @@
                             <span class="btn-text-desktop">INITIALIZE SCAN &rarr;</span>
                             <span class="btn-text-mobile">SCAN</span>
                         </button>
-                        <input type="file" id="file-input" class="hidden" accept="image/*">
+                        <input type="file" id="file-input" class="hidden" accept="image/*,video/mp4,video/quicktime,video/x-msvideo,.mp4,.mov,.avi">
                     </div>
                 </div>
 
@@ -422,12 +422,12 @@
                         </span>
                     </div>
                     <div class="apple-status-pills">
-                        <span class="apple-pill-green pill-3d">
+                        <button class="apple-pill-green pill-3d btn-live-pill" id="btn-live-stream-toggle" title="Toggle Live Video Stream (/video_feed)" aria-label="Toggle Live Video Stream">
                             <span class="pill-dot"></span>
                             <svg class="pill-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                            <span class="pill-text-desktop">LIVE FEED</span>
+                            <span class="pill-text-desktop" id="live-stream-btn-text">LIVE FEED</span>
                             <span class="pill-text-mobile">LIVE</span>
-                        </span>
+                        </button>
                         <span class="apple-pill-orange pill-3d">
                             <span class="pill-dot"></span>
                             <svg class="pill-icon" viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 4a2 2 0 0 0-4 0v9.17a4 4 0 1 0 4 0V4z"></path><circle cx="12" cy="18" r="1.5" fill="currentColor"></circle></svg>
@@ -473,9 +473,10 @@
 
                 <div class="display-panel" id="output-display-panel">
                     <img id="output-image" class="hidden" alt="Detection Output" title="Click to view full image">
+                    <video id="output-video" class="hidden" controls autoplay loop playsinline></video>
                     
                     <!-- Floating Expand Hint on Image Hover -->
-                    <button class="output-expand-hint" id="output-expand-hint" aria-label="Expand image to full view">
+                    <button class="output-expand-hint" id="output-expand-hint" aria-label="Expand media to full view">
                         <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="15 3 21 3 21 9"></polyline>
                             <polyline points="9 21 3 21 3 15"></polyline>
@@ -493,7 +494,7 @@
                             <div class="icon-center-dot"></div>
                         </div>
                         <span class="apple-standby-title">AWAITING FEED</span>
-                        <p class="apple-standby-desc">Drag & drop imagery or initialize scan to detect intrusions</p>
+                        <p class="apple-standby-desc">Drag &amp; drop imagery or video, or stream live to detect intrusions</p>
                         <div class="apple-standby-tag">
                             <span class="tag-indicator"></span>
                             <span>DUAL-SPECTRUM READY</span>

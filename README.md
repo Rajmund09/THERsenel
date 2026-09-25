@@ -136,18 +136,22 @@ Evaluated on **Aug 31, 2026** using `python src/evaluation/evaluate_models.py`.
 
 ### 📅 Phase 7: Milestones M8 & M9 — Real-Time Inference & ROI Intrusion Tracker (Aug 31, 2026)
 - **Goal**: Combine the Fusion Neural Network, YOLOv8 Detections, and Ray-Casting Polygon ROI algorithm into a real-time visualization application.
-- **Executed Command**: `python src/inference/predict.py --image data/samples/rgb_baseline_detections.jpg`
+- **Executed Commands**:
+  - **Image Inference**: `python src/inference/predict.py --image data/samples/rgb_baseline_detections.jpg`
+  - **Offline Video Processor**: `python src/inference/predict.py --video input.mp4 --output output.mp4`
 - **Result**: Successfully integrated. Bounding boxes highlight objects in **Green** (Safe) and switch to **Red [ALERT]** instantly if the target coordinate breaches the custom restricted polygon region.
-- **Status**: 100% Functional. Codebase is completely prepared for hardware export.
+- **Status**: 100% Functional. Codebase is completely prepared for hardware export and video processing.
 
 ---
 
-### 📅 Phase 8: Edge FastAPI Microservice & Asynchronous Tensor Fusion (Sep 2–6, 2026)
-- **Goal**: Transition from standalone CLI inference scripts to a production-grade, asynchronous ASGI edge web service supporting live operator interaction and zero-latency stream handling.
+### 📅 Phase 8: Edge FastAPI Microservice & Asynchronous Video/Stream Fusion (Sep 2–6, 2026)
+- **Goal**: Transition from standalone CLI inference scripts to a production-grade, asynchronous ASGI edge web service supporting live operator interaction, video files, and zero-latency stream handling.
 - **Delivered**:
   - Built high-performance asynchronous RESTful microservice in [`src/inference/api.py`](src/inference/api.py) using **FastAPI** and **Uvicorn**.
   - Engineered `/predict` endpoint supporting multi-part image uploads, dynamic confidence thresholding (`conf_threshold`), and automatic dual-modality tensor registration.
-  - Implemented real-time intrusion header telemetry (`X-Alerts-Count`) for seamless zero-latency front-end synchronization.
+  - Implemented `/predict_video` endpoint supporting video file uploads (MP4, AVI, MOV, MKV, WEBM), frame-by-frame intrusion tracking, dynamic HUD telemetry, and streaming MP4 response.
+  - Developed `/video_feed` real-time MJPEG live streaming route for zero-latency camera/RTSP/clip surveillance.
+  - Implemented real-time intrusion header telemetry (`X-Alerts-Count`, `X-Total-Frames`, `X-Average-FPS`) for seamless zero-latency front-end synchronization.
   - Developed historical forensic event logging API (`/history` and `/logs`) linking intrusion timestamps, bounding coordinates, and confidence metadata.
 
 ---

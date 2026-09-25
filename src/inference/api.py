@@ -5,8 +5,10 @@ import asyncio
 from collections import defaultdict
 from pathlib import Path
 
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request, status
-from fastapi.responses import Response, FileResponse, JSONResponse
+import os
+import tempfile
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request, status, BackgroundTasks
+from fastapi.responses import Response, FileResponse, JSONResponse, StreamingResponse
 from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -31,11 +33,17 @@ from src.intrusion.border_tracker import BorderIntrusionTracker
 # CONSTANTS & SECURITY CONFIGURATION
 # ---------------------------------------------------------------------------
 MAX_UPLOAD_SIZE = 15 * 1024 * 1024  # 15 MB
+MAX_VIDEO_UPLOAD_SIZE = 50 * 1024 * 1024  # 50 MB for video files
 ALLOWED_MIME_TYPES = {
     "image/jpeg", "image/png", "image/webp", "image/bmp", "image/tiff",
     "application/octet-stream"  # Browser generic fallback
 }
 ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp", ".tiff", ".tif"}
+ALLOWED_VIDEO_MIME_TYPES = {
+    "video/mp4", "video/x-msvideo", "video/quicktime", "video/x-matroska",
+    "video/webm", "application/octet-stream"
+}
+ALLOWED_VIDEO_EXTENSIONS = {".mp4", ".avi", ".mov", ".mkv", ".webm"}
 MAX_CONCURRENT_INFERENCES = 4
 RATE_LIMIT_REQUESTS = 60  # Max requests per window per IP
 RATE_LIMIT_WINDOW = 60.0  # Window size in seconds
@@ -149,6 +157,28 @@ try:
 except Exception as e:
     logger.critical(f"Failed to initialize YOLO model: {e}", exc_info=True)
     model = None
+
+def safe_model_predict(frame, conf: float):
+    """
+    Executes YOLO model prediction with automatic graceful fallback from GPU to CPU
+    if device-specific memory or driver exceptions occur.
+    """
+    global model
+    if model is None:
+        raise RuntimeError("YOLO model is not initialized.")
+    try:
+        return model(frame, conf=conf, verbose=False)[0]
+    except Exception as e:
+        err_msg = str(e).lower()
+        if "cuda" in err_msg or "device" in err_msg or "out of memory" in err_msg:
+            logger.warning(f"Hardware execution exception ({e}). Gracefully migrating model tensor pipeline to CPU.")
+            try:
+                model.to("cpu")
+                return model(frame, conf=conf, verbose=False)[0]
+            except Exception as e2:
+                logger.error(f"CPU fallback prediction failed: {e2}")
+                raise
+        raise
 
 # Default Restricted Border Zone Polygon
 ROI_POLYGON = [(50, 150), (600, 150), (600, 450), (50, 450)]
@@ -266,7 +296,7 @@ async def predict(
         t0 = time.perf_counter()
         
         # Model Prediction (Runs YOLO with bounded confidence threshold)
-        results = model(frame, conf=conf_threshold, verbose=False)[0]
+        results = safe_model_predict(frame, conf=conf_threshold)
 
         detections = []
         for i, box in enumerate(results.boxes):
@@ -342,6 +372,331 @@ async def predict(
         )
     finally:
         inference_semaphore.release()
+
+# ---------------------------------------------------------------------------
+# REAL-TIME MJPEG VIDEO STREAMING PIPELINE
+# ---------------------------------------------------------------------------
+async def stream_frames_generator(source: str = "sample", conf_threshold: float = 0.5):
+    """
+    Asynchronously captures frames from webcam, RTSP stream, or test clip,
+    runs YOLOv8 detection + Border Tracker, and yields multipart MJPEG stream.
+    """
+    sample_file = PROJECT_ROOT / "Create_a_high_end_cinematic_ac.mp4"
+    if source == "sample" and sample_file.exists():
+        cap_src = str(sample_file)
+    elif str(source).isdigit():
+        cap_src = int(source)
+    else:
+        cap_src = source if source != "sample" else 0
+
+    cap = cv2.VideoCapture(cap_src)
+    if not cap.isOpened() and sample_file.exists():
+        cap = cv2.VideoCapture(str(sample_file))
+
+    tracker = BorderIntrusionTracker(roi_polygon=ROI_POLYGON)
+    frame_idx = 0
+
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                # If stream/file reached end, loop for continuous live monitoring
+                if isinstance(cap_src, str) and Path(cap_src).exists():
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    ret, frame = cap.read()
+                    if not ret:
+                        await asyncio.sleep(0.04)
+                        continue
+                else:
+                    await asyncio.sleep(0.04)
+                    continue
+
+            frame_idx += 1
+            t0 = time.perf_counter()
+
+            # Downscale high-res video for smooth web streaming
+            h, w = frame.shape[:2]
+            if w > 854:
+                target_w = 854
+                target_h = int(h * (854 / w))
+                frame = cv2.resize(frame, (target_w, target_h))
+                h, w = target_h, target_w
+
+            # Adaptive ROI scaled to video frame
+            stream_roi = [
+                (int(w * 0.08), int(h * 0.25)),
+                (int(w * 0.92), int(h * 0.25)),
+                (int(w * 0.92), int(h * 0.85)),
+                (int(w * 0.08), int(h * 0.85))
+            ]
+            tracker.roi_polygon = stream_roi
+
+            # YOLOv8 Inference
+            detections = []
+            alerts = []
+            if model is not None:
+                results = safe_model_predict(frame, conf=conf_threshold)
+                for i, box in enumerate(results.boxes):
+                    x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                    conf = float(box.conf[0].item())
+                    cls_id = int(box.cls[0].item())
+                    cls_name = model.names.get(cls_id, f"class_{cls_id}")
+                    detections.append({
+                        "id": i,
+                        "class_name": cls_name,
+                        "bbox": [float(x1), float(y1), float(x2), float(y2)],
+                        "confidence": conf
+                    })
+                alerts = tracker.process_detections(detections)
+
+            has_alert = len(alerts) > 0
+            latency_ms = (time.perf_counter() - t0) * 1000.0
+            fps = 1000.0 / max(latency_ms, 0.01)
+
+            # Draw Tactical Overlay
+            overlay = frame.copy()
+            pts = np.array(stream_roi, np.int32).reshape((-1, 1, 2))
+            roi_color = (0, 0, 255) if has_alert else (0, 165, 255)
+            cv2.fillPoly(overlay, [pts], roi_color)
+            cv2.addWeighted(overlay, 0.18, frame, 0.82, 0, frame)
+            cv2.polylines(frame, [pts], isClosed=True, color=roi_color, thickness=2)
+
+            alert_ids = {a["track_id"]: a for a in alerts}
+            for det in detections:
+                x1, y1, x2, y2 = map(int, det["bbox"])
+                is_alert = det["id"] in alert_ids
+                box_color = (0, 0, 255) if is_alert else (0, 230, 118)
+                label = f"{det['class_name'].upper()} {det['confidence']:.2f}"
+                if is_alert:
+                    label = f"[ALERT] {label}"
+                cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
+                cv2.putText(frame, label, (x1, max(14, y1 - 6)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.45, box_color, 2, cv2.LINE_AA)
+
+            # Live HUD
+            cv2.rectangle(frame, (10, 10), (450, 48), (15, 15, 18), -1)
+            cv2.rectangle(frame, (10, 10), (450, 48), (255, 255, 255), 1)
+            hud_text = f"LIVE STREAM | {fps:.1f} FPS | ALERTS: {len(alerts)}"
+            status_color = (0, 0, 255) if has_alert else (0, 230, 118)
+            cv2.putText(frame, hud_text, (20, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.58, status_color, 2, cv2.LINE_AA)
+
+            # Encode Frame to JPEG
+            encode_ok, encoded_img = cv2.imencode('.jpg', frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            if encode_ok:
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + encoded_img.tobytes() + b'\r\n')
+
+            # Cooperative yield for smooth async streaming
+            await asyncio.sleep(0.015)
+    finally:
+        cap.release()
+
+
+@app.get("/video_feed", summary="Live Real-Time MJPEG Intrusion Video Stream")
+async def video_feed(source: str = "sample", conf: float = 0.45):
+    return StreamingResponse(
+        stream_frames_generator(source=source, conf_threshold=conf),
+        media_type="multipart/x-mixed-replace; boundary=frame"
+    )
+
+
+# ---------------------------------------------------------------------------
+# VIDEO FILE UPLOAD & INFERENCE PIPELINE
+# ---------------------------------------------------------------------------
+def remove_temp_file(path: str):
+    """Cleanup temporary video files."""
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+    except Exception as e:
+        logger.warning(f"Could not remove temp file {path}: {e}")
+
+
+@app.post("/predict_video", summary="Execute Video File Intrusion Detection & Annotation")
+async def predict_video(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    file: UploadFile = File(..., description="Video file (MP4, AVI, MOV, MKV, WEBM)"),
+    conf_threshold: float = Form(0.5, ge=0.01, le=1.0, description="Detection confidence threshold")
+):
+    if model is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Neural network inference engine is currently offline."
+        )
+
+    # 1. Rate Limiting Check
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    if not await check_rate_limit(client_ip):
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Rate limit exceeded. Maximum {RATE_LIMIT_REQUESTS} requests per minute.",
+            headers={"Retry-After": "60"}
+        )
+
+    # 2. Content-Length & Format Check
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > MAX_VIDEO_UPLOAD_SIZE:
+        raise HTTPException(
+            status_code=413,
+            detail=f"Uploaded video exceeds maximum allowed limit of {MAX_VIDEO_UPLOAD_SIZE // (1024 * 1024)} MB."
+        )
+
+    ext = Path(file.filename or "").suffix.lower()
+    content_type = (file.content_type or "").lower()
+    if content_type not in ALLOWED_VIDEO_MIME_TYPES and ext not in ALLOWED_VIDEO_EXTENSIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unsupported video format '{content_type or ext}'. Allowed: MP4, AVI, MOV, MKV, WEBM."
+        )
+
+    # 3. Stream upload to a temporary file
+    temp_dir = Path(tempfile.gettempdir())
+    unique_suffix = f"{time.time()}_{os.getpid()}"
+    temp_in_path = temp_dir / f"upload_in_{unique_suffix}{ext}"
+    temp_out_path = temp_dir / f"upload_out_{unique_suffix}.mp4"
+
+    bytes_read = 0
+    with open(temp_in_path, "wb") as f_out:
+        while True:
+            chunk = await file.read(64 * 1024)
+            if not chunk:
+                break
+            bytes_read += len(chunk)
+            if bytes_read > MAX_VIDEO_UPLOAD_SIZE:
+                temp_in_path.unlink(missing_ok=True)
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Video exceeds maximum allowed size of {MAX_VIDEO_UPLOAD_SIZE // (1024 * 1024)} MB."
+                )
+            f_out.write(chunk)
+
+    if bytes_read == 0:
+        temp_in_path.unlink(missing_ok=True)
+        raise HTTPException(status_code=400, detail="Uploaded video file is empty.")
+
+    # 4. Process Video with Concurrency Control
+    try:
+        await asyncio.wait_for(inference_semaphore.acquire(), timeout=12.0)
+    except asyncio.TimeoutError:
+        temp_in_path.unlink(missing_ok=True)
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Server inference queue is saturated. Please retry shortly.",
+            headers={"Retry-After": "5"}
+        )
+
+    try:
+        cap = cv2.VideoCapture(str(temp_in_path))
+        if not cap.isOpened():
+            temp_in_path.unlink(missing_ok=True)
+            raise HTTPException(status_code=400, detail="Corrupted, unreadable, or invalid video file.")
+
+        v_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)) or 640
+        v_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT)) or 480
+        v_fps = cap.get(cv2.CAP_PROP_FPS) or 24.0
+
+        # Downscale if > 1280 to keep processing fast
+        if v_width > 1280:
+            scale = 1280 / v_width
+            v_width = 1280
+            v_height = int(v_height * scale)
+
+        video_roi = [
+            (int(v_width * 0.08), int(v_height * 0.25)),
+            (int(v_width * 0.92), int(v_height * 0.25)),
+            (int(v_width * 0.92), int(v_height * 0.85)),
+            (int(v_width * 0.08), int(v_height * 0.85))
+        ]
+        video_tracker = BorderIntrusionTracker(roi_polygon=video_roi)
+
+        fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+        writer = cv2.VideoWriter(str(temp_out_path), fourcc, v_fps, (v_width, v_height))
+
+        frame_count = 0
+        total_alerts = 0
+        MAX_FRAMES_TO_PROCESS = 300  # Caps processing at first 300 frames (~12.5s) for instant turnaround
+
+        t_start = time.perf_counter()
+        while cap.isOpened() and frame_count < MAX_FRAMES_TO_PROCESS:
+            ret, frame = cap.read()
+            if not ret:
+                break
+            frame_count += 1
+            if frame.shape[1] != v_width or frame.shape[0] != v_height:
+                frame = cv2.resize(frame, (v_width, v_height))
+
+            # YOLO Inference
+            results = safe_model_predict(frame, conf=conf_threshold)
+            detections = []
+            for i, box in enumerate(results.boxes):
+                x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+                conf = float(box.conf[0].item())
+                cls_id = int(box.cls[0].item())
+                cls_name = model.names.get(cls_id, f"class_{cls_id}")
+                detections.append({
+                    "id": i,
+                    "class_name": cls_name,
+                    "bbox": [float(x1), float(y1), float(x2), float(y2)],
+                    "confidence": conf
+                })
+
+            alerts = video_tracker.process_detections(detections)
+            has_alert = len(alerts) > 0
+            if has_alert:
+                total_alerts += len(alerts)
+
+            # Annotate
+            overlay = frame.copy()
+            pts = np.array(video_roi, np.int32).reshape((-1, 1, 2))
+            roi_color = (0, 0, 255) if has_alert else (0, 165, 255)
+            cv2.fillPoly(overlay, [pts], roi_color)
+            cv2.addWeighted(overlay, 0.18, frame, 0.82, 0, frame)
+            cv2.polylines(frame, [pts], isClosed=True, color=roi_color, thickness=2)
+
+            alert_ids = {a["track_id"]: a for a in alerts}
+            for det in detections:
+                x1, y1, x2, y2 = map(int, det["bbox"])
+                is_alert = det["id"] in alert_ids
+                box_color = (0, 0, 255) if is_alert else (0, 230, 118)
+                label = f"{det['class_name'].upper()} {det['confidence']:.2f}"
+                if is_alert:
+                    label = f"[ALERT] {label}"
+                cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
+                cv2.putText(frame, label, (x1, max(14, y1 - 6)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.45, box_color, 2, cv2.LINE_AA)
+
+            hud_text = f"FRAME {frame_count:04d} | ALERTS: {len(alerts)}"
+            cv2.rectangle(frame, (10, 10), (320, 45), (15, 15, 18), -1)
+            cv2.rectangle(frame, (10, 10), (320, 45), (255, 255, 255), 1)
+            cv2.putText(frame, hud_text, (18, 33), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 255) if has_alert else (0, 230, 118), 2)
+
+            writer.write(frame)
+
+        cap.release()
+        writer.release()
+        total_time = time.perf_counter() - t_start
+        avg_fps = frame_count / max(total_time, 0.001)
+
+        # Remove input file
+        temp_in_path.unlink(missing_ok=True)
+
+        # Cleanup output file after sending response
+        background_tasks.add_task(remove_temp_file, str(temp_out_path))
+
+        return FileResponse(
+            str(temp_out_path),
+            media_type="video/mp4",
+            headers={
+                "X-Total-Frames": str(frame_count),
+                "X-Total-Alerts": str(total_alerts),
+                "X-Average-FPS": f"{avg_fps:.1f}",
+                "X-Processing-Time-Sec": f"{total_time:.2f}"
+            }
+        )
+    finally:
+        inference_semaphore.release()
+
 
 # ---------------------------------------------------------------------------
 # STATIC FRONTEND ROUTES & FAVICONS

@@ -1572,7 +1572,7 @@ body {
   gap: 8px;
 }
 
-/* Neon Green Pill */
+/* Neon Green Pill & Interactive Live Stream Toggle */
 .apple-pill-green {
   display: inline-flex;
   align-items: center;
@@ -1587,7 +1587,31 @@ body {
   letter-spacing: 0.06em;
   color: #059669;
   text-transform: uppercase;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+}
+
+.apple-pill-green.btn-live-pill {
+  cursor: pointer;
+  user-select: none;
+  outline: none;
+}
+
+.apple-pill-green.btn-live-pill:hover {
+  background: rgba(0, 230, 118, 0.16);
+  border-color: rgba(0, 230, 118, 0.55);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 230, 118, 0.2);
+}
+
+.apple-pill-green.btn-live-pill:active {
+  transform: translateY(1px);
+}
+
+.apple-pill-green.btn-live-pill.is-streaming {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: #DC2626;
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.35);
 }
 
 .apple-pill-green .pill-dot {
@@ -1597,6 +1621,17 @@ body {
   background: #00E676;
   box-shadow: 0 0 8px rgba(0, 230, 118, 0.8);
   animation: pulseNeonGreen 2s infinite ease-in-out;
+}
+
+.apple-pill-green.btn-live-pill.is-streaming .pill-dot {
+  background: #EF4444;
+  box-shadow: 0 0 10px #EF4444;
+  animation: pulseNeonRed 1.2s infinite ease-in-out;
+}
+
+@keyframes pulseNeonRed {
+  0%, 100% { opacity: 1; transform: scale(1.15); }
+  50% { opacity: 0.35; transform: scale(0.8); }
 }
 
 /* Orange Pill */
@@ -1683,8 +1718,9 @@ body {
   cursor: default;
 }
 
-/* Output Image */
-#output-image {
+/* Output Image & Video */
+#output-image,
+#output-video {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1693,10 +1729,14 @@ body {
   max-height: 100%;
   object-fit: contain;
   object-position: center;
-  background: transparent;
+  background: #0A0D12;
   border-radius: 14px;
   z-index: 10;
   transition: opacity 0.4s ease;
+}
+
+#output-video {
+  outline: none;
 }
 
 /* Pixel Swap Canvas: Sits above viewport contents, 100% visible, non-blocking */

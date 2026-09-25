@@ -49,6 +49,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const outputImage = document.getElementById('output-image');
+    const outputVideo = document.getElementById('output-video');
+    const btnLiveStreamToggle = document.getElementById('btn-live-stream-toggle');
+    const liveStreamBtnText = document.getElementById('live-stream-btn-text');
+    let isLiveStreaming = false;
+
     const placeholder = document.getElementById('placeholder');
     const spinner = document.getElementById('spinner');
     const displayCard = document.querySelector('.data-card.display-card');
@@ -117,6 +122,61 @@ document.addEventListener("DOMContentLoaded", () => {
             adjustCardDimensions(currentImageDimensions.width, currentImageDimensions.height);
         }
     });
+
+    // --- LIVE WEB STREAMING CONTROLLER (/video_feed) ---
+    function stopLiveStream() {
+        if (!isLiveStreaming) return;
+        isLiveStreaming = false;
+        if (outputImage) {
+            outputImage.src = "";
+            outputImage.classList.add('hidden');
+        }
+        if (btnLiveStreamToggle) {
+            btnLiveStreamToggle.classList.remove('is-streaming');
+            if (liveStreamBtnText) liveStreamBtnText.textContent = "LIVE FEED";
+        }
+        if (placeholder) placeholder.classList.remove('hidden');
+        if (alertBanner) alertBanner.classList.add('hidden');
+        clearError();
+    }
+
+    function startLiveStream() {
+        clearError();
+        if (outputVideo) {
+            outputVideo.pause();
+            outputVideo.classList.add('hidden');
+        }
+        if (placeholder) placeholder.classList.add('hidden');
+        if (spinner) spinner.classList.add('hidden');
+
+        isLiveStreaming = true;
+        if (btnLiveStreamToggle) {
+            btnLiveStreamToggle.classList.add('is-streaming');
+            if (liveStreamBtnText) liveStreamBtnText.textContent = "STREAMING";
+        }
+
+        const conf = confSlider ? confSlider.value : 0.45;
+        outputImage.src = `/video_feed?source=sample&conf=${conf}&t=${Date.now()}`;
+        outputImage.classList.remove('hidden');
+        adjustCardDimensions(1280, 720);
+
+        const btnFullviewTrigger = document.getElementById('btn-fullview-trigger');
+        const outputExpandHint = document.getElementById('output-expand-hint');
+        if (btnFullviewTrigger) btnFullviewTrigger.classList.add('is-ready');
+        if (outputExpandHint) outputExpandHint.classList.add('is-visible');
+    }
+
+    if (btnLiveStreamToggle) {
+        btnLiveStreamToggle.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (isLiveStreaming) {
+                stopLiveStream();
+            } else {
+                startLiveStream();
+            }
+        });
+    }
 
     const alertBanner = document.getElementById('alert-banner');
     const alertText = document.getElementById('alert-text');
@@ -233,8 +293,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Re-run prediction when slider is released
         confSlider.addEventListener('change', () => {
-            if (lastUploadedFile) {
-                processImage(lastUploadedFile);
+            if (isLiveStreaming) {
+                outputImage.src = `/video_feed?source=sample&conf=${confSlider.value}&t=${Date.now()}`;
+            } else if (lastUploadedFile) {
+                handleFileUpload(lastUploadedFile);
             }
         });
     }
@@ -246,7 +308,11 @@ document.addEventListener("DOMContentLoaded", () => {
             newVal = Math.round(newVal * 100) / 100;
             confSlider.value = newVal;
             updateParameterDisplay(newVal);
-            if (lastUploadedFile) processImage(lastUploadedFile);
+            if (isLiveStreaming) {
+                outputImage.src = `/video_feed?source=sample&conf=${newVal}&t=${Date.now()}`;
+            } else if (lastUploadedFile) {
+                handleFileUpload(lastUploadedFile);
+            }
         });
     }
 
@@ -257,7 +323,11 @@ document.addEventListener("DOMContentLoaded", () => {
             newVal = Math.round(newVal * 100) / 100;
             confSlider.value = newVal;
             updateParameterDisplay(newVal);
-            if (lastUploadedFile) processImage(lastUploadedFile);
+            if (isLiveStreaming) {
+                outputImage.src = `/video_feed?source=sample&conf=${newVal}&t=${Date.now()}`;
+            } else if (lastUploadedFile) {
+                handleFileUpload(lastUploadedFile);
+            }
         });
     }
 
@@ -268,7 +338,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (confSlider) {
                 confSlider.value = pVal;
                 updateParameterDisplay(pVal);
-                if (lastUploadedFile) processImage(lastUploadedFile);
+                if (isLiveStreaming) {
+                    outputImage.src = `/video_feed?source=sample&conf=${pVal}&t=${Date.now()}`;
+                } else if (lastUploadedFile) {
+                    handleFileUpload(lastUploadedFile);
+                }
             }
         });
     });
@@ -280,7 +354,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (confSlider) {
                 confSlider.value = spVal;
                 updateParameterDisplay(spVal);
-                if (lastUploadedFile) processImage(lastUploadedFile);
+                if (isLiveStreaming) {
+                    outputImage.src = `/video_feed?source=sample&conf=${spVal}&t=${Date.now()}`;
+                } else if (lastUploadedFile) {
+                    handleFileUpload(lastUploadedFile);
+                }
             }
         });
     });
@@ -318,7 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
     uploadBox.addEventListener('drop', (e) => {
         const file = e.dataTransfer.files[0];
         if (file) {
-            processImage(file);
+            handleFileUpload(file);
         }
     });
 
@@ -326,9 +404,29 @@ document.addEventListener("DOMContentLoaded", () => {
     fileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
-            processImage(file);
+            handleFileUpload(file);
         }
     });
+
+    // Unified Media Dispatcher (Images & Videos)
+    function handleFileUpload(file) {
+        if (!file) return;
+        lastUploadedFile = file;
+
+        // Stop live stream if active
+        if (isLiveStreaming) {
+            stopLiveStream();
+        }
+
+        const fileExt = '.' + (file.name.split('.').pop() || '').toLowerCase();
+        const isVideo = file.type.startsWith('video/') || ['.mp4', '.avi', '.mov', '.mkv', '.webm'].includes(fileExt);
+
+        if (isVideo) {
+            processVideo(file);
+        } else {
+            processImage(file);
+        }
+    }
 
     async function processImage(file) {
         lastUploadedFile = file;
@@ -370,9 +468,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // UI State: Loading (show spinner, hide image, hide alert)
         outputImage.classList.add('hidden');
+        if (outputVideo) {
+            outputVideo.pause();
+            outputVideo.classList.add('hidden');
+        }
         alertBanner.classList.add('hidden');
         if (placeholder) placeholder.classList.add('hidden');
-        if (spinner) spinner.classList.remove('hidden');
+        if (spinner) {
+            const spinTitle = spinner.querySelector('.apple-processing-title');
+            const spinSub = spinner.querySelector('.apple-processing-sub');
+            if (spinTitle) spinTitle.textContent = "PROCESSING";
+            if (spinSub) spinSub.textContent = "FUSING THERMAL & RGB TENSORS";
+            spinner.classList.remove('hidden');
+        }
 
         const btnFullviewTrigger = document.getElementById('btn-fullview-trigger');
         const outputExpandHint = document.getElementById('output-expand-hint');
@@ -469,6 +577,136 @@ document.addEventListener("DOMContentLoaded", () => {
 
         } catch (error) {
             console.error("Error processing image:", error);
+            if (spinner) spinner.classList.add('hidden');
+            if (placeholder) placeholder.classList.remove('hidden');
+            showError("COMMUNICATION ERROR", "Could not establish connection to Edge AI server. Verify backend daemon status.", "ERR_NETWORK");
+        }
+    }
+
+    async function processVideo(file) {
+        clearError();
+
+        if (!file) {
+            showError("INVALID INPUT", "No video file provided for analysis.", "NO_PAYLOAD");
+            return;
+        }
+
+        const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
+        if (file.size > MAX_VIDEO_SIZE) {
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+            showError("PAYLOAD REJECTED", `Video size (${sizeMB} MB) exceeds maximum security buffer of 50 MB.`, "ERR_FILE_TOO_LARGE");
+            if (spinner) spinner.classList.add('hidden');
+            if (placeholder) placeholder.classList.remove('hidden');
+            return;
+        }
+
+        const ALLOWED_VIDEO_EXTENSIONS = ['.mp4', '.avi', '.mov', '.mkv', '.webm'];
+        const fileExt = '.' + (file.name.split('.').pop() || '').toLowerCase();
+        if (!file.type.startsWith('video/') && !ALLOWED_VIDEO_EXTENSIONS.includes(fileExt)) {
+            showError("UNSUPPORTED FORMAT", `MIME / extension '${fileExt || file.type}' is unauthorized. Allowed: MP4, AVI, MOV, MKV, WEBM.`, "ERR_INVALID_MEDIA");
+            if (spinner) spinner.classList.add('hidden');
+            if (placeholder) placeholder.classList.remove('hidden');
+            return;
+        }
+
+        // Preview initial sizing via temporary video element
+        const tempVideoUrl = URL.createObjectURL(file);
+        const tempVid = document.createElement('video');
+        tempVid.onloadedmetadata = () => {
+            adjustCardDimensions(tempVid.videoWidth, tempVid.videoHeight);
+            URL.revokeObjectURL(tempVideoUrl);
+        };
+        tempVid.src = tempVideoUrl;
+
+        // UI State: Loading
+        outputImage.classList.add('hidden');
+        if (outputVideo) {
+            outputVideo.pause();
+            outputVideo.classList.add('hidden');
+        }
+        alertBanner.classList.add('hidden');
+        if (placeholder) placeholder.classList.add('hidden');
+        if (spinner) {
+            const spinTitle = spinner.querySelector('.apple-processing-title');
+            const spinSub = spinner.querySelector('.apple-processing-sub');
+            if (spinTitle) spinTitle.textContent = "PROCESSING VIDEO";
+            if (spinSub) spinSub.textContent = "AI FUSION PIPELINE & BORDER TRACKING...";
+            spinner.classList.remove('hidden');
+        }
+
+        const btnFullviewTrigger = document.getElementById('btn-fullview-trigger');
+        const outputExpandHint = document.getElementById('output-expand-hint');
+        if (btnFullviewTrigger) btnFullviewTrigger.classList.remove('is-ready');
+        if (outputExpandHint) outputExpandHint.classList.remove('is-visible');
+
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('conf_threshold', confSlider ? confSlider.value : 0.5);
+
+        try {
+            const response = await fetch('/predict_video', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                let errorData = null;
+                try {
+                    errorData = await response.json();
+                } catch (_) {}
+
+                const detailMsg = errorData?.detail || `Video inference pipeline returned HTTP ${response.status} ${response.statusText}`;
+                const errCode = errorData?.error_code || (
+                    response.status === 413 ? "FILE_TOO_LARGE" :
+                    response.status === 429 ? "RATE_LIMIT_EXCEEDED" :
+                    response.status === 503 ? "SERVER_BUSY" :
+                    `HTTP_${response.status}`
+                );
+
+                let errorTitle = "VIDEO INFERENCE REJECTED";
+                if (response.status === 413) errorTitle = "VIDEO PAYLOAD EXCEEDED";
+                else if (response.status === 429) errorTitle = "RATE LIMIT EXCEEDED";
+                else if (response.status === 503) errorTitle = "ENGINE CONCURRENCY SATURATION";
+                else if (response.status === 400) errorTitle = "INVALID VIDEO FILE";
+
+                showError(errorTitle, detailMsg, errCode);
+                if (spinner) spinner.classList.add('hidden');
+                if (placeholder) placeholder.classList.remove('hidden');
+                return;
+            }
+
+            const totalFrames = response.headers.get("X-Total-Frames") || "0";
+            const totalAlerts = parseInt(response.headers.get("X-Total-Alerts") || "0");
+            const avgFps = response.headers.get("X-Average-FPS") || "";
+            const procTime = response.headers.get("X-Processing-Time-Sec") || "";
+
+            const videoBlob = await response.blob();
+            const videoUrl = URL.createObjectURL(videoBlob);
+
+            if (spinner) spinner.classList.add('hidden');
+            if (placeholder) placeholder.classList.add('hidden');
+
+            if (outputVideo) {
+                outputVideo.src = videoUrl;
+                outputVideo.onloadedmetadata = () => {
+                    adjustCardDimensions(outputVideo.videoWidth, outputVideo.videoHeight);
+                };
+                outputVideo.classList.remove('hidden');
+                outputVideo.play().catch(() => {});
+            }
+
+            if (btnFullviewTrigger) btnFullviewTrigger.classList.add('is-ready');
+            if (outputExpandHint) outputExpandHint.classList.add('is-visible');
+
+            if (totalAlerts > 0) {
+                alertText.textContent = `${totalAlerts} INTRUSION ALERT(S) DETECTED (${totalFrames} FRAMES @ ${avgFps} FPS)`;
+                alertBanner.classList.remove('hidden');
+            } else {
+                alertText.textContent = `CLEAR — NO INTRUSIONS (${totalFrames} FRAMES PROCESSED IN ${procTime}s)`;
+                alertBanner.classList.remove('hidden');
+            }
+        } catch (error) {
+            console.error("Error processing video:", error);
             if (spinner) spinner.classList.add('hidden');
             if (placeholder) placeholder.classList.remove('hidden');
             showError("COMMUNICATION ERROR", "Could not establish connection to Edge AI server. Verify backend daemon status.", "ERR_NETWORK");
@@ -720,31 +958,39 @@ document.addEventListener("DOMContentLoaded", () => {
     let fullviewClosingTimeout = null;
 
     function openFullView() {
-        if (!imageFullviewModal || !outputImage) return;
-        // Verify output image has a valid source and is visible
-        if (outputImage.classList.contains('hidden') || !outputImage.src) {
-            return;
-        }
+        if (!imageFullviewModal) return;
+        const isImgVisible = outputImage && !outputImage.classList.contains('hidden') && outputImage.src;
+        const isVidVisible = outputVideo && !outputVideo.classList.contains('hidden') && outputVideo.src;
+
+        if (!isImgVisible && !isVidVisible) return;
 
         if (fullviewClosingTimeout) {
             clearTimeout(fullviewClosingTimeout);
             fullviewClosingTimeout = null;
         }
 
-        // Sync full view image source & download link
-        if (fullviewImg) {
-            fullviewImg.src = outputImage.src;
-        }
-        if (fullviewDownloadBtn) {
-            fullviewDownloadBtn.href = outputImage.src;
-            fullviewDownloadBtn.setAttribute('download', `thermal_scan_${Date.now()}.png`);
-        }
-
-        // Update resolution metadata chip
-        if (fullviewMetaDimensions) {
-            const w = outputImage.naturalWidth || 640;
-            const h = outputImage.naturalHeight || 640;
-            fullviewMetaDimensions.textContent = `${w} × ${h} PX // 4D SPECTRAL`;
+        if (isImgVisible) {
+            if (fullviewImg) fullviewImg.src = outputImage.src;
+            if (fullviewDownloadBtn) {
+                fullviewDownloadBtn.href = outputImage.src;
+                fullviewDownloadBtn.setAttribute('download', isLiveStreaming ? `stream_frame_${Date.now()}.jpg` : `thermal_scan_${Date.now()}.png`);
+            }
+            if (fullviewMetaDimensions) {
+                const w = outputImage.naturalWidth || 640;
+                const h = outputImage.naturalHeight || 640;
+                fullviewMetaDimensions.textContent = isLiveStreaming ? `${w} × ${h} PX // LIVE FEED` : `${w} × ${h} PX // 4D SPECTRAL`;
+            }
+        } else if (isVidVisible) {
+            if (fullviewImg) fullviewImg.src = "";
+            if (fullviewDownloadBtn) {
+                fullviewDownloadBtn.href = outputVideo.src;
+                fullviewDownloadBtn.setAttribute('download', `thermal_video_${Date.now()}.mp4`);
+            }
+            if (fullviewMetaDimensions) {
+                const w = outputVideo.videoWidth || 1280;
+                const h = outputVideo.videoHeight || 720;
+                fullviewMetaDimensions.textContent = `${w} × ${h} PX // ANNOTATED MP4`;
+            }
         }
 
         // Trigger opening state & 3D animation

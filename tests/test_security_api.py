@@ -196,3 +196,98 @@ class TestValidInferenceExecution:
         assert "x-alerts-count" in response.headers
         assert "x-detections-count" in response.headers
         assert len(response.content) > 0
+
+
+def create_test_video(num_frames=5, width=160, height=120):
+    """Generate a small valid in-memory MP4 video for integration testing."""
+    import tempfile
+    import os
+    tfile = tempfile.NamedTemporaryFile(suffix=".mp4", delete=False)
+    tfile.close()
+    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
+    writer = cv2.VideoWriter(tfile.name, fourcc, 10.0, (width, height))
+    for _ in range(num_frames):
+        frame = np.full((height, width, 3), 128, dtype=np.uint8)
+        writer.write(frame)
+    writer.release()
+    with open(tfile.name, "rb") as f:
+        data = f.read()
+    try:
+        os.remove(tfile.name)
+    except Exception:
+        pass
+    return data
+
+
+class TestVideoProcessingAndStreaming:
+    """Verify video streaming (/video_feed) and video file inference (/predict_video)."""
+
+    @pytest.mark.anyio
+    async def test_video_stream_generator_yields_frame(self):
+        ip_request_history.clear()
+        from src.inference.api import stream_frames_generator
+        gen = stream_frames_generator(source="sample", conf_threshold=0.5)
+        chunk = await gen.__anext__()
+        assert b"--frame" in chunk
+        assert b"image/jpeg" in chunk
+        await gen.aclose()
+
+    def test_video_routes_registered_in_app(self):
+        routes = [route.path for route in app.routes]
+        assert "/video_feed" in routes
+        assert "/predict_video" in routes
+
+    def test_reject_oversized_video_payload(self):
+        ip_request_history.clear()
+        oversized_headers = {"content-length": str(60 * 1024 * 1024)}
+        fake_bytes = b"ftypisom" + b"\x00" * 100
+        response = client.post(
+            "/predict_video",
+            files={"file": ("large_video.mp4", io.BytesIO(fake_bytes), "video/mp4")},
+            data={"conf_threshold": "0.5"},
+            headers=oversized_headers
+        )
+        assert response.status_code == 413
+        assert "exceeds maximum allowed limit" in response.json().get("detail", "")
+
+    def test_reject_invalid_video_format(self):
+        ip_request_history.clear()
+        fake_binary = b"MZ\x90\x00\x03\x00\x00\x00"
+        response = client.post(
+            "/predict_video",
+            files={"file": ("trojan.exe", io.BytesIO(fake_binary), "application/x-msdownload")},
+            data={"conf_threshold": "0.5"}
+        )
+        assert response.status_code == 400
+        assert "Unsupported video format" in response.json().get("detail", "")
+
+    def test_reject_empty_video_file(self):
+        ip_request_history.clear()
+        response = client.post(
+            "/predict_video",
+            files={"file": ("empty.mp4", io.BytesIO(b""), "video/mp4")},
+            data={"conf_threshold": "0.5"}
+        )
+        assert response.status_code == 400
+        assert "empty" in response.json().get("detail", "").lower()
+
+    def test_valid_video_inference_pipeline(self):
+        ip_request_history.clear()
+        video_bytes = create_test_video(num_frames=6, width=160, height=120)
+        assert len(video_bytes) > 0
+
+        response = client.post(
+            "/predict_video",
+            files={"file": ("border_surveillance.mp4", io.BytesIO(video_bytes), "video/mp4")},
+            data={"conf_threshold": "0.45"}
+        )
+
+        assert response.status_code == 200
+        assert response.headers.get("content-type") == "video/mp4"
+        assert "x-total-frames" in response.headers
+        assert int(response.headers.get("x-total-frames")) == 6
+        assert "x-total-alerts" in response.headers
+        assert "x-average-fps" in response.headers
+        assert "x-processing-time-sec" in response.headers
+        assert len(response.content) > 0
+
