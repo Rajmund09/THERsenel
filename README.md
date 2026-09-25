@@ -27,7 +27,7 @@ Automated Border Intrusion Detection Using Thermal-Visible (RGB) Image Fusion an
 | **M8** | Polygon ROI definition & multi-object tracking integration | ✅ **Completed** | Ray-casting ROI breach engine & multi-object tracker built |
 | **M9** | Production Edge Web Terminal & Tactical Surveillance GUI | ✅ **Completed** | FastAPI ASGI microservice, WebGL LiquidChrome, glassmorphism, sensory telemetry, & 3D full-view lightbox |
 | **M10** | Historical Forensic Database & Real-Time Sensor Telemetry Logging | ✅ **Completed** | Persistent forensic event logging, spectral LUT modes, & audit trail |
-| **M11** | ONNX export, TensorRT FP16 optimization, & Jetson Xavier benchmarking | ⏳ **Pending** | Post-training ONNX export & TensorRT engine compilation |
+| **M11** | ONNX export, FP16 edge optimization, hardware benchmarking, & CI | ✅ **Completed** | ONNX export pipeline, latency profiler, webhook dispatchers, & GitHub Actions CI |
 
 ---
 
@@ -364,6 +364,18 @@ python src/inference/predict.py --image data/samples/rgb_baseline_detections.jpg
 python -m uvicorn src.inference.api:app --reload --host 127.0.0.1 --port 8000
 ```
 > *Status: ✅ Completed! Launches the military-spec tactical web application. Navigate to `http://127.0.0.1:8000` to interact with the real-time thermal-visible fusion dashboard, multi-spectral dropup dock, forensic event gallery, and 3D full-view lightbox.*
+
+### 7️⃣ Run Hardware Latency & Throughput Benchmark (Milestone M11 — Completed)
+```powershell
+python -m src.evaluation.benchmark --iterations 50
+```
+> *Status: ✅ Completed! Measures P50, P90, P95, and P99 latency percentiles and throughput (FPS) across 640x640 and 1280x720 resolutions.*
+
+### 8️⃣ Export Model to ONNX for Edge Embedded Deployment (Milestone M11 — Completed)
+```powershell
+python -m src.models.export_onnx --weights runs/rgb_baseline/rgb_yolov8/weights/best.pt --imgsz 640
+```
+> *Status: ✅ Completed! Generates optimized `best.onnx` with dynamic batching and optional FP16 half-precision for low-power edge SBCs.*
 
 ---
 
