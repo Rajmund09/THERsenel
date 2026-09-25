@@ -1661,6 +1661,24 @@ body {
   animation: pulseNeonOrange 2s infinite ease-in-out;
 }
 
+.btn-alarm-toggle {
+  cursor: pointer;
+}
+.btn-alarm-toggle:hover {
+  background: rgba(255, 107, 0, 0.16);
+  border-color: rgba(255, 107, 0, 0.45);
+}
+.btn-alarm-toggle.is-muted {
+  background: rgba(140, 140, 140, 0.08);
+  border-color: rgba(140, 140, 140, 0.25);
+  color: #8E8E93;
+}
+.btn-alarm-toggle.is-muted .pill-dot {
+  background: #8E8E93;
+  box-shadow: none;
+  animation: none;
+}
+
 @keyframes pulseNeonGreen {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.4; transform: scale(0.85); }

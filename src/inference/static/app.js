@@ -67,6 +67,31 @@ document.addEventListener("DOMContentLoaded", () => {
         pixelSize: 13.5
     }) : null;
 
+    // Initialize Tactical Web Audio Siren
+    const tacticalSiren = window.TacticalAudioSiren ? new window.TacticalAudioSiren() : null;
+    const btnAlarmToggle = document.getElementById('btn-alarm-toggle');
+    const alarmToggleText = document.getElementById('alarm-toggle-text');
+
+    function updateAlarmToggleUI() {
+        if (!tacticalSiren || !btnAlarmToggle) return;
+        if (tacticalSiren.isMuted) {
+            btnAlarmToggle.classList.add('is-muted');
+            if (alarmToggleText) alarmToggleText.textContent = "SIREN OFF";
+        } else {
+            btnAlarmToggle.classList.remove('is-muted');
+            if (alarmToggleText) alarmToggleText.textContent = "SIREN ON";
+        }
+    }
+
+    if (btnAlarmToggle && tacticalSiren) {
+        updateAlarmToggleUI();
+        btnAlarmToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            tacticalSiren.toggleMute();
+            updateAlarmToggleUI();
+        });
+    }
+
     // Smoothly adjust the Output Card's width and height to match the image dimensions
     function adjustCardDimensions(naturalWidth, naturalHeight) {
         if (!displayCard || !displayPanel || !naturalWidth || !naturalHeight) return;
@@ -557,6 +582,7 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (alertCount > 0) {
                                 alertText.textContent = `${alertCount} INTRUSION(S) DETECTED`;
                                 alertBanner.classList.remove('hidden');
+                                if (tacticalSiren) tacticalSiren.playIntrusionAlert(1.8);
                             }
                         },
                         // Done:
@@ -573,6 +599,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (alertCount > 0) {
                         alertText.textContent = `${alertCount} INTRUSION(S) DETECTED`;
                         alertBanner.classList.remove('hidden');
+                        if (tacticalSiren) tacticalSiren.playIntrusionAlert(1.8);
                     }
                 }
             };
@@ -708,6 +735,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 const intruderText = totalIntruders === 1 ? "1 INTRUDER BREACHED PERIMETER" : `${totalIntruders} INTRUDERS BREACHED PERIMETER`;
                 alertText.textContent = `${intruderText} (${totalFrames} FRAMES @ ${avgFps} FPS)`;
                 alertBanner.classList.remove('hidden');
+                if (tacticalSiren) tacticalSiren.playIntrusionAlert(2.2);
             } else {
                 alertText.textContent = `CLEAR — NO INTRUSIONS (${totalFrames} FRAMES PROCESSED IN ${procTime}s)`;
                 alertBanner.classList.remove('hidden');

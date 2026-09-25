@@ -30,6 +30,11 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.intrusion.border_tracker import BorderIntrusionTracker
+from src.intrusion.audit_logger import ForensicIncidentLogger
+from src.intrusion.alert_dispatcher import WebhookAlertDispatcher
+
+incident_logger = ForensicIncidentLogger()
+webhook_dispatcher = WebhookAlertDispatcher()
 
 # ---------------------------------------------------------------------------
 # CONSTANTS & SECURITY CONFIGURATION
@@ -776,6 +781,24 @@ async def favicon_png():
     if png_file.exists():
         return FileResponse(png_file, media_type="image/png")
     return Response(status_code=404)
+
+# ---------------------------------------------------------------------------
+# FORENSIC AUDIT TRAIL & INCIDENT LOGGING ROUTES
+# ---------------------------------------------------------------------------
+@app.get("/incidents/recent", summary="Retrieve Recent Perimeter Breach Audit Incidents")
+async def get_recent_incidents(limit: int = 50):
+    return JSONResponse(content={"incidents": incident_logger.get_recent_incidents(limit=limit)})
+
+
+@app.get("/incidents/export", summary="Export Forensic Incident Audit Trail as CSV")
+async def export_incident_audit_trail():
+    csv_content = incident_logger.export_csv_string()
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=breach_incidents_audit.csv"}
+    )
+
 
 # Mount Frontend Static Assets
 app.mount("/", StaticFiles(directory=str(static_path), html=True), name="static")
