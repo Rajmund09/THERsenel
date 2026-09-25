@@ -3279,6 +3279,11 @@ footer {
   -webkit-user-drag: none;
 }
 
+video.fullview-img {
+  background: #06080B;
+  outline: none;
+}
+
 /* Tactical Corner Brackets */
 .fullview-corner-bracket {
   position: absolute;

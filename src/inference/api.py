@@ -6,6 +6,8 @@ from collections import defaultdict
 from pathlib import Path
 
 import os
+import subprocess
+import shutil
 import tempfile
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request, status, BackgroundTasks
 from fastapi.responses import Response, FileResponse, JSONResponse, StreamingResponse
@@ -69,6 +71,7 @@ app.add_middleware(
     allow_origins=["*"],
     allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["*"],
     allow_credentials=False,
     max_age=600,
 )
@@ -422,12 +425,12 @@ async def stream_frames_generator(source: str = "sample", conf_threshold: float 
                 frame = cv2.resize(frame, (target_w, target_h))
                 h, w = target_h, target_w
 
-            # Adaptive ROI scaled to video frame
+            # Tactical corridor surveillance perimeter
             stream_roi = [
-                (int(w * 0.08), int(h * 0.25)),
-                (int(w * 0.92), int(h * 0.25)),
-                (int(w * 0.92), int(h * 0.85)),
-                (int(w * 0.08), int(h * 0.85))
+                (int(w * 0.05), int(h * 0.30)),
+                (int(w * 0.95), int(h * 0.30)),
+                (int(w * 0.95), int(h * 0.95)),
+                (int(w * 0.05), int(h * 0.95))
             ]
             tracker.roi_polygon = stream_roi
 
@@ -458,25 +461,28 @@ async def stream_frames_generator(source: str = "sample", conf_threshold: float 
             pts = np.array(stream_roi, np.int32).reshape((-1, 1, 2))
             roi_color = (0, 0, 255) if has_alert else (0, 165, 255)
             cv2.fillPoly(overlay, [pts], roi_color)
-            cv2.addWeighted(overlay, 0.18, frame, 0.82, 0, frame)
+            cv2.addWeighted(overlay, 0.16, frame, 0.84, 0, frame)
             cv2.polylines(frame, [pts], isClosed=True, color=roi_color, thickness=2)
+            cv2.putText(
+                frame, "RESTRICTED PERIMETER // ACTIVE",
+                (stream_roi[0][0] + 8, stream_roi[0][1] - 8),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.52, roi_color, 2, cv2.LINE_AA
+            )
 
-            alert_ids = {a["track_id"]: a for a in alerts}
             for det in detections:
                 x1, y1, x2, y2 = map(int, det["bbox"])
-                is_alert = det["id"] in alert_ids
+                is_alert = det.get("is_breached", False)
+                trk_id = det.get("track_id", 1)
                 box_color = (0, 0, 255) if is_alert else (0, 230, 118)
-                label = f"{det['class_name'].upper()} {det['confidence']:.2f}"
-                if is_alert:
-                    label = f"[ALERT] {label}"
+                label = f"[ALERT #{trk_id}] {det['class_name'].upper()} {det['confidence']:.2f}" if is_alert else f"[ID #{trk_id}] {det['class_name'].upper()} {det['confidence']:.2f}"
                 cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
                 cv2.putText(frame, label, (x1, max(14, y1 - 6)),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.45, box_color, 2, cv2.LINE_AA)
 
             # Live HUD
-            cv2.rectangle(frame, (10, 10), (450, 48), (15, 15, 18), -1)
-            cv2.rectangle(frame, (10, 10), (450, 48), (255, 255, 255), 1)
-            hud_text = f"LIVE STREAM | {fps:.1f} FPS | ALERTS: {len(alerts)}"
+            cv2.rectangle(frame, (10, 10), (480, 48), (15, 15, 18), -1)
+            cv2.rectangle(frame, (10, 10), (480, 48), (255, 255, 255), 1)
+            hud_text = f"LIVE STREAM | {fps:.1f} FPS | INTRUDERS: {tracker.unique_breached_count} | CURRENT: {len(alerts)}"
             status_color = (0, 0, 255) if has_alert else (0, 230, 118)
             cv2.putText(frame, hud_text, (20, 35), cv2.FONT_HERSHEY_SIMPLEX, 0.58, status_color, 2, cv2.LINE_AA)
 
@@ -510,6 +516,31 @@ def remove_temp_file(path: str):
             os.remove(path)
     except Exception as e:
         logger.warning(f"Could not remove temp file {path}: {e}")
+
+
+def transcode_to_h264(input_path: Path, output_path: Path) -> bool:
+    """
+    Transcodes raw OpenCV video to browser-standard H.264 (avc1/yuv420p) with faststart
+    so HTML5 video players in Chrome, Edge, and Safari can render and play it smoothly.
+    """
+    ffmpeg_bin = shutil.which("ffmpeg") or "ffmpeg"
+    cmd = [
+        ffmpeg_bin,
+        "-y",
+        "-i", str(input_path),
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "23",
+        "-pix_fmt", "yuv420p",
+        "-movflags", "+faststart",
+        str(output_path)
+    ]
+    try:
+        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=45)
+        return res.returncode == 0 and output_path.exists() and output_path.stat().st_size > 0
+    except Exception as e:
+        logger.error(f"FFmpeg transcoding failed or timed out: {e}")
+        return False
 
 
 @app.post("/predict_video", summary="Execute Video File Intrusion Detection & Annotation")
@@ -554,6 +585,7 @@ async def predict_video(
     temp_dir = Path(tempfile.gettempdir())
     unique_suffix = f"{time.time()}_{os.getpid()}"
     temp_in_path = temp_dir / f"upload_in_{unique_suffix}{ext}"
+    temp_raw_path = temp_dir / f"upload_raw_{unique_suffix}.mp4"
     temp_out_path = temp_dir / f"upload_out_{unique_suffix}.mp4"
 
     bytes_read = 0
@@ -611,10 +643,9 @@ async def predict_video(
         video_tracker = BorderIntrusionTracker(roi_polygon=video_roi)
 
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-        writer = cv2.VideoWriter(str(temp_out_path), fourcc, v_fps, (v_width, v_height))
+        writer = cv2.VideoWriter(str(temp_raw_path), fourcc, v_fps, (v_width, v_height))
 
         frame_count = 0
-        total_alerts = 0
         MAX_FRAMES_TO_PROCESS = 300  # Caps processing at first 300 frames (~12.5s) for instant turnaround
 
         t_start = time.perf_counter()
@@ -643,33 +674,47 @@ async def predict_video(
 
             alerts = video_tracker.process_detections(detections)
             has_alert = len(alerts) > 0
-            if has_alert:
-                total_alerts += len(alerts)
 
-            # Annotate
+            # Draw Tactical Perimeter Zone
             overlay = frame.copy()
             pts = np.array(video_roi, np.int32).reshape((-1, 1, 2))
             roi_color = (0, 0, 255) if has_alert else (0, 165, 255)
             cv2.fillPoly(overlay, [pts], roi_color)
             cv2.addWeighted(overlay, 0.18, frame, 0.82, 0, frame)
             cv2.polylines(frame, [pts], isClosed=True, color=roi_color, thickness=2)
+            cv2.putText(
+                frame, "RESTRICTED PERIMETER ZONE",
+                (video_roi[0][0] + 8, video_roi[0][1] - 8),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.52, roi_color, 2, cv2.LINE_AA
+            )
 
-            alert_ids = {a["track_id"]: a for a in alerts}
+            # Draw Historical Motion Trails
+            for tid, trk in video_tracker.active_tracks.items():
+                pts_hist = trk.get("history", [])
+                if len(pts_hist) > 1:
+                    trail_color = (0, 0, 255) if trk.get("breached", False) else (0, 230, 118)
+                    for j in range(1, len(pts_hist)):
+                        thickness = max(1, int(np.sqrt(48 / float(len(pts_hist) - j + 1))))
+                        pt1 = (int(pts_hist[j - 1][0]), int(pts_hist[j - 1][1]))
+                        pt2 = (int(pts_hist[j][0]), int(pts_hist[j][1]))
+                        cv2.line(frame, pt1, pt2, trail_color, thickness, cv2.LINE_AA)
+
+            # Draw Bounding Boxes & Tracking Badges
             for det in detections:
                 x1, y1, x2, y2 = map(int, det["bbox"])
-                is_alert = det["id"] in alert_ids
-                box_color = (0, 0, 255) if is_alert else (0, 230, 118)
-                label = f"{det['class_name'].upper()} {det['confidence']:.2f}"
-                if is_alert:
-                    label = f"[ALERT] {label}"
+                is_breached = det.get("is_breached", False)
+                trk_id = det.get("track_id", 1)
+                box_color = (0, 0, 255) if is_breached else (0, 230, 118)
+                label = f"[ALERT #{trk_id}] {det['class_name'].upper()} {det['confidence']:.2f}" if is_breached else f"[ID #{trk_id}] {det['class_name'].upper()} {det['confidence']:.2f}"
                 cv2.rectangle(frame, (x1, y1), (x2, y2), box_color, 2)
                 cv2.putText(frame, label, (x1, max(14, y1 - 6)),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.45, box_color, 2, cv2.LINE_AA)
 
-            hud_text = f"FRAME {frame_count:04d} | ALERTS: {len(alerts)}"
-            cv2.rectangle(frame, (10, 10), (320, 45), (15, 15, 18), -1)
-            cv2.rectangle(frame, (10, 10), (320, 45), (255, 255, 255), 1)
-            cv2.putText(frame, hud_text, (18, 33), cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 255) if has_alert else (0, 230, 118), 2)
+            # Draw Tactical HUD Telemetry Header
+            hud_text = f"FRAME {frame_count:04d} | INTRUDERS: {video_tracker.unique_breached_count} | ACTIVE: {len(alerts)}"
+            cv2.rectangle(frame, (10, 10), (450, 45), (15, 15, 18), -1)
+            cv2.rectangle(frame, (10, 10), (450, 45), (255, 255, 255), 1)
+            cv2.putText(frame, hud_text, (18, 33), cv2.FONT_HERSHEY_SIMPLEX, 0.52, (0, 0, 255) if has_alert else (0, 230, 118), 2, cv2.LINE_AA)
 
             writer.write(frame)
 
@@ -681,15 +726,29 @@ async def predict_video(
         # Remove input file
         temp_in_path.unlink(missing_ok=True)
 
-        # Cleanup output file after sending response
-        background_tasks.add_task(remove_temp_file, str(temp_out_path))
+        # Transcode raw OpenCV output to web-native H.264
+        h264_success = transcode_to_h264(temp_raw_path, temp_out_path)
+        if h264_success:
+            temp_raw_path.unlink(missing_ok=True)
+            target_response_path = temp_out_path
+        else:
+            # Fallback if transcoding is unavailable
+            logger.warning("Falling back to raw OpenCV video (ffmpeg transcoding bypassed)")
+            target_response_path = temp_raw_path
 
+        # Cleanup output files after response is sent
+        background_tasks.add_task(remove_temp_file, str(target_response_path))
+        if target_response_path != temp_out_path:
+            background_tasks.add_task(remove_temp_file, str(temp_out_path))
+
+        unique_intruders = video_tracker.unique_breached_count
         return FileResponse(
-            str(temp_out_path),
+            str(target_response_path),
             media_type="video/mp4",
             headers={
                 "X-Total-Frames": str(frame_count),
-                "X-Total-Alerts": str(total_alerts),
+                "X-Total-Alerts": str(unique_intruders),
+                "X-Total-Intruders": str(unique_intruders),
                 "X-Average-FPS": f"{avg_fps:.1f}",
                 "X-Processing-Time-Sec": f"{total_time:.2f}"
             }

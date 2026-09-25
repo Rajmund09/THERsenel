@@ -144,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         clearError();
         if (outputVideo) {
             outputVideo.pause();
+            outputVideo.src = "";
             outputVideo.classList.add('hidden');
         }
         if (placeholder) placeholder.classList.add('hidden');
@@ -470,6 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
         outputImage.classList.add('hidden');
         if (outputVideo) {
             outputVideo.pause();
+            outputVideo.src = "";
             outputVideo.classList.add('hidden');
         }
         alertBanner.classList.add('hidden');
@@ -677,6 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const totalFrames = response.headers.get("X-Total-Frames") || "0";
             const totalAlerts = parseInt(response.headers.get("X-Total-Alerts") || "0");
+            const totalIntruders = parseInt(response.headers.get("X-Total-Intruders") || response.headers.get("X-Total-Alerts") || "0");
             const avgFps = response.headers.get("X-Average-FPS") || "";
             const procTime = response.headers.get("X-Processing-Time-Sec") || "";
 
@@ -688,18 +691,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (outputVideo) {
                 outputVideo.src = videoUrl;
+                outputVideo.load();
                 outputVideo.onloadedmetadata = () => {
                     adjustCardDimensions(outputVideo.videoWidth, outputVideo.videoHeight);
                 };
                 outputVideo.classList.remove('hidden');
-                outputVideo.play().catch(() => {});
+                outputVideo.play().catch((e) => {
+                    console.log("Autoplay was prevented by browser policy:", e);
+                });
             }
 
             if (btnFullviewTrigger) btnFullviewTrigger.classList.add('is-ready');
             if (outputExpandHint) outputExpandHint.classList.add('is-visible');
 
-            if (totalAlerts > 0) {
-                alertText.textContent = `${totalAlerts} INTRUSION ALERT(S) DETECTED (${totalFrames} FRAMES @ ${avgFps} FPS)`;
+            if (totalIntruders > 0) {
+                const intruderText = totalIntruders === 1 ? "1 INTRUDER BREACHED PERIMETER" : `${totalIntruders} INTRUDERS BREACHED PERIMETER`;
+                alertText.textContent = `${intruderText} (${totalFrames} FRAMES @ ${avgFps} FPS)`;
                 alertBanner.classList.remove('hidden');
             } else {
                 alertText.textContent = `CLEAR — NO INTRUSIONS (${totalFrames} FRAMES PROCESSED IN ${procTime}s)`;
@@ -950,6 +957,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const fullviewDialog = document.getElementById('fullviewDialog');
     const fullviewCloseBtn = document.getElementById('fullviewCloseBtn');
     const fullviewImg = document.getElementById('fullviewImg');
+    const fullviewVideo = document.getElementById('fullviewVideo');
     const fullviewMetaDimensions = document.getElementById('fullviewMetaDimensions');
     const fullviewDownloadBtn = document.getElementById('fullviewDownloadBtn');
     const btnFullviewTriggerPill = document.getElementById('btn-fullview-trigger');
@@ -970,7 +978,15 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         if (isImgVisible) {
-            if (fullviewImg) fullviewImg.src = outputImage.src;
+            if (fullviewVideo) {
+                fullviewVideo.pause();
+                fullviewVideo.src = "";
+                fullviewVideo.classList.add('hidden');
+            }
+            if (fullviewImg) {
+                fullviewImg.src = outputImage.src;
+                fullviewImg.classList.remove('hidden');
+            }
             if (fullviewDownloadBtn) {
                 fullviewDownloadBtn.href = outputImage.src;
                 fullviewDownloadBtn.setAttribute('download', isLiveStreaming ? `stream_frame_${Date.now()}.jpg` : `thermal_scan_${Date.now()}.png`);
@@ -981,7 +997,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 fullviewMetaDimensions.textContent = isLiveStreaming ? `${w} × ${h} PX // LIVE FEED` : `${w} × ${h} PX // 4D SPECTRAL`;
             }
         } else if (isVidVisible) {
-            if (fullviewImg) fullviewImg.src = "";
+            if (fullviewImg) {
+                fullviewImg.src = "";
+                fullviewImg.classList.add('hidden');
+            }
+            if (fullviewVideo) {
+                fullviewVideo.src = outputVideo.src;
+                fullviewVideo.classList.remove('hidden');
+                fullviewVideo.load();
+                fullviewVideo.play().catch(() => {});
+            }
             if (fullviewDownloadBtn) {
                 fullviewDownloadBtn.href = outputVideo.src;
                 fullviewDownloadBtn.setAttribute('download', `thermal_video_${Date.now()}.mp4`);
@@ -1013,6 +1038,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function closeFullView() {
         if (!imageFullviewModal || !imageFullviewModal.classList.contains('is-open')) return;
+
+        if (fullviewVideo) {
+            fullviewVideo.pause();
+        }
 
         // Trigger closing 3D flip-out animation
         imageFullviewModal.classList.add('is-closing');
