@@ -39,7 +39,7 @@ class BorderIntrusionTracker:
         if not self.roi_polygon or len(self.roi_polygon) < 3:
             return False
         
-        pts = np.array(self.roi_polygon, np.int32)
+        pts = np.array(self.roi_polygon, np.int32).reshape((-1, 1, 2))
         # cv2.pointPolygonTest returns >= 0 if point is inside or on the contour
         res = cv2.pointPolygonTest(pts, (float(point[0]), float(point[1])), False)
         return res >= 0

@@ -2,6 +2,8 @@ import sys
 import time
 import logging
 import asyncio
+import json
+from typing import List, Tuple, Optional
 from collections import defaultdict
 from pathlib import Path
 
@@ -16,6 +18,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from ultralytics import YOLO
 import cv2
+import torch
 import numpy as np
 
 # Configure Logging
@@ -155,41 +158,122 @@ async def check_rate_limit(client_ip: str) -> bool:
 # MODEL INITIALIZATION
 # ---------------------------------------------------------------------------
 model_path = PROJECT_ROOT / "runs" / "rgb_baseline" / "rgb_yolov8" / "weights" / "best.pt"
+DEVICE = "cuda:0" if torch.cuda.is_available() else "cpu"
+
 try:
     if not model_path.exists():
         logger.warning(f"Custom weights not found at {model_path}. Loading default yolov8n.pt fallback.")
         model = YOLO("yolov8n.pt")
     else:
-        logger.info(f"Loading trained weights from {model_path}...")
+        logger.info(f"Loading trained weights from {model_path} onto {DEVICE}...")
         model = YOLO(str(model_path))
+
+    if torch.cuda.is_available():
+        try:
+            model.to("cuda")
+            # GPU Warmup run (pre-allocates CUDA tensor memory so 1st user request is instant)
+            dummy = np.zeros((640, 640, 3), dtype=np.uint8)
+            _ = model(dummy, device="cuda", imgsz=640, verbose=False)
+            logger.info("NVIDIA CUDA GPU acceleration enabled & warmed up successfully.")
+        except Exception as e:
+            logger.warning(f"Could not initialize model on CUDA ({e}). Running on CPU.")
+            model.to("cpu")
 except Exception as e:
     logger.critical(f"Failed to initialize YOLO model: {e}", exc_info=True)
     model = None
 
+
 def safe_model_predict(frame, conf: float):
     """
-    Executes YOLO model prediction with automatic graceful fallback from GPU to CPU
+    Executes accelerated YOLO model prediction with automatic graceful fallback from GPU to CPU
     if device-specific memory or driver exceptions occur.
     """
     global model
     if model is None:
         raise RuntimeError("YOLO model is not initialized.")
     try:
-        return model(frame, conf=conf, verbose=False)[0]
+        dev = "cuda" if torch.cuda.is_available() else "cpu"
+        return model(frame, conf=conf, device=dev, imgsz=640, verbose=False)[0]
     except Exception as e:
         err_msg = str(e).lower()
         if "cuda" in err_msg or "device" in err_msg or "out of memory" in err_msg:
             logger.warning(f"Hardware execution exception ({e}). Gracefully migrating model tensor pipeline to CPU.")
             try:
                 model.to("cpu")
-                return model(frame, conf=conf, verbose=False)[0]
+                return model(frame, conf=conf, device="cpu", imgsz=640, verbose=False)[0]
             except Exception as e2:
                 logger.error(f"CPU fallback prediction failed: {e2}")
                 raise
         raise
 
 # Default Restricted Border Zone Polygon
+# Default Restricted Border Zone Polygon & Dynamic Resolver
 ROI_POLYGON = [(50, 150), (600, 150), (600, 450), (50, 450)]
+
+
+def resolve_roi_polygon(roi_input: Optional[str], width: int, height: int) -> List[Tuple[int, int]]:
+    """
+    Dynamically computes ROI polygon from preset name or custom coordinates,
+    scaling to match current frame dimensions (width, height).
+    """
+    preset = (roi_input or "default").strip().lower()
+    
+    if preset in ("road_bottom", "bottom", "road"):
+        # Lower road barrier (only targets close to the sensor)
+        return [
+            (int(width * 0.10), int(height * 0.65)),
+            (int(width * 0.90), int(height * 0.65)),
+            (int(width * 0.90), int(height * 0.95)),
+            (int(width * 0.10), int(height * 0.95))
+        ]
+    elif preset in ("left_flank", "left", "left_sidewalk"):
+        # Left boundary / sidewalk
+        return [
+            (int(width * 0.03), int(height * 0.25)),
+            (int(width * 0.42), int(height * 0.25)),
+            (int(width * 0.42), int(height * 0.92)),
+            (int(width * 0.03), int(height * 0.92))
+        ]
+    elif preset in ("right_flank", "right", "right_sidewalk"):
+        # Right boundary / sidewalk
+        return [
+            (int(width * 0.58), int(height * 0.25)),
+            (int(width * 0.97), int(height * 0.25)),
+            (int(width * 0.97), int(height * 0.92)),
+            (int(width * 0.58), int(height * 0.92))
+        ]
+    elif preset in ("horizon", "far", "top"):
+        # Far-distance horizon fence
+        return [
+            (int(width * 0.15), int(height * 0.18)),
+            (int(width * 0.85), int(height * 0.18)),
+            (int(width * 0.85), int(height * 0.45)),
+            (int(width * 0.15), int(height * 0.45))
+        ]
+    
+    # Try parsing custom JSON coordinates: e.g. [[x1, y1], [x2, y2], ...] or [[0.1, 0.4], ...]
+    if roi_input and roi_input not in ("default", "center"):
+        try:
+            coords = json.loads(roi_input)
+            if isinstance(coords, list) and len(coords) >= 3:
+                pts = []
+                for pt in coords:
+                    x, y = float(pt[0]), float(pt[1])
+                    if 0.0 <= x <= 1.0 and 0.0 <= y <= 1.0:
+                        pts.append((int(x * width), int(y * height)))
+                    else:
+                        pts.append((int(x), int(y)))
+                return pts
+        except Exception as e:
+            logger.warning(f"Failed to parse custom ROI coords '{roi_input}': {e}. Falling back to default.")
+
+    # Default center corridor
+    return [
+        (int(width * 0.08), int(height * 0.28)),
+        (int(width * 0.92), int(height * 0.28)),
+        (int(width * 0.92), int(height * 0.88)),
+        (int(width * 0.08), int(height * 0.88))
+    ]
 
 # ---------------------------------------------------------------------------
 # SYSTEM HEALTH & READINESS ENDPOINTS
@@ -221,7 +305,8 @@ async def health_check():
 async def predict(
     request: Request,
     file: UploadFile = File(..., description="Image file (JPEG, PNG, WEBP, BMP, TIFF)"),
-    conf_threshold: float = Form(0.5, ge=0.01, le=1.0, description="Detection confidence threshold [0.01 - 1.00]")
+    conf_threshold: float = Form(0.5, ge=0.01, le=1.0, description="Detection confidence threshold [0.01 - 1.00]"),
+    roi_preset: Optional[str] = Form(None, description="ROI preset: 'default', 'road_bottom', 'left_flank', 'right_flank', 'horizon', or JSON coordinates")
 ):
     if model is None:
         raise HTTPException(
@@ -320,8 +405,12 @@ async def predict(
                 "confidence": conf
             })
 
+        # Resolve dynamic ROI polygon for frame dimensions & preset
+        h_frame, w_frame = frame.shape[:2]
+        active_roi = resolve_roi_polygon(roi_preset, w_frame, h_frame)
+
         # Thread-safe Per-Request Intrusion Tracker
-        req_tracker = BorderIntrusionTracker(roi_polygon=ROI_POLYGON)
+        req_tracker = BorderIntrusionTracker(roi_polygon=active_roi)
         alerts = req_tracker.process_detections(detections)
         
         latency_ms = (time.perf_counter() - t0) * 1000.0
@@ -329,27 +418,39 @@ async def predict(
 
         # Draw Tactical ROI & Detection Visualizations
         overlay = frame.copy()
-        pts = np.array(ROI_POLYGON, np.int32).reshape((-1, 1, 2))
-        cv2.fillPoly(overlay, [pts], (0, 0, 255))
+        pts = np.array(active_roi, np.int32).reshape((-1, 1, 2))
+        has_alert_roi = len(alerts) > 0
+        roi_color = (0, 0, 255) if has_alert_roi else (0, 165, 255)
+        cv2.fillPoly(overlay, [pts], roi_color)
         cv2.addWeighted(overlay, 0.2, frame, 0.8, 0, frame)
-        cv2.polylines(frame, [pts], isClosed=True, color=(0, 0, 255), thickness=2)
+        cv2.polylines(frame, [pts], isClosed=True, color=roi_color, thickness=2)
         cv2.putText(
             frame, "RESTRICTED BORDER ROI", 
-            (ROI_POLYGON[0][0], ROI_POLYGON[0][1] - 10), 
-            cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2
+            (active_roi[0][0], max(20, active_roi[0][1] - 10)), 
+            cv2.FONT_HERSHEY_SIMPLEX, 0.6, roi_color, 2
         )
 
-        alert_ids = {a["track_id"]: a for a in alerts}
         has_alert = False
+        intrusions_detail = []
+
         for det in detections:
             x1, y1, x2, y2 = map(int, det["bbox"])
-            is_alert = det["id"] in alert_ids
+            # Correctly use is_breached flag computed for this exact bounding box
+            is_alert = bool(det.get("is_breached", False))
+            trk_id = det.get("track_id", det["id"] + 1)
 
-            color = (0, 0, 255) if is_alert else (0, 255, 0)
-            label = f"{det['class_name']} {det['confidence']:.2f}"
+            color = (0, 0, 255) if is_alert else (0, 230, 118)
+            label = f"[ALERT] {det['class_name']} {det['confidence']:.2f}" if is_alert else f"{det['class_name']} {det['confidence']:.2f}"
+            
             if is_alert:
-                label = f"[ALERT] {label}"
                 has_alert = True
+                intrusions_detail.append({
+                    "id": trk_id,
+                    "class_name": det["class_name"].upper(),
+                    "confidence": round(float(det["confidence"]) * 100, 1),
+                    "bbox": [x1, y1, x2, y2],
+                    "location": f"X:{int((x1+x2)/2)} Y:{y2}"
+                })
 
             cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
             cv2.putText(frame, label, (x1, max(15, y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 0.55, color, 2)
@@ -375,7 +476,8 @@ async def predict(
                 "X-Alerts-Count": str(len(alerts)),
                 "X-Inference-Latency-Ms": f"{latency_ms:.1f}",
                 "X-Inference-FPS": f"{fps:.1f}",
-                "X-Detections-Count": str(len(detections))
+                "X-Detections-Count": str(len(detections)),
+                "X-Intrusions-Data": json.dumps(intrusions_detail)
             }
         )
     finally:
@@ -384,7 +486,7 @@ async def predict(
 # ---------------------------------------------------------------------------
 # REAL-TIME MJPEG VIDEO STREAMING PIPELINE
 # ---------------------------------------------------------------------------
-async def stream_frames_generator(source: str = "sample", conf_threshold: float = 0.5):
+async def stream_frames_generator(source: str = "sample", conf_threshold: float = 0.5, roi: Optional[str] = None):
     """
     Asynchronously captures frames from webcam, RTSP stream, or test clip,
     runs YOLOv8 detection + Border Tracker, and yields multipart MJPEG stream.
@@ -430,13 +532,8 @@ async def stream_frames_generator(source: str = "sample", conf_threshold: float 
                 frame = cv2.resize(frame, (target_w, target_h))
                 h, w = target_h, target_w
 
-            # Tactical corridor surveillance perimeter
-            stream_roi = [
-                (int(w * 0.05), int(h * 0.30)),
-                (int(w * 0.95), int(h * 0.30)),
-                (int(w * 0.95), int(h * 0.95)),
-                (int(w * 0.05), int(h * 0.95))
-            ]
+            # Tactical corridor surveillance perimeter (dynamic preset)
+            stream_roi = resolve_roi_polygon(roi, w, h)
             tracker.roi_polygon = stream_roi
 
             # YOLOv8 Inference
@@ -504,9 +601,9 @@ async def stream_frames_generator(source: str = "sample", conf_threshold: float 
 
 
 @app.get("/video_feed", summary="Live Real-Time MJPEG Intrusion Video Stream")
-async def video_feed(source: str = "sample", conf: float = 0.45):
+async def video_feed(source: str = "sample", conf: float = 0.45, roi: Optional[str] = None):
     return StreamingResponse(
-        stream_frames_generator(source=source, conf_threshold=conf),
+        stream_frames_generator(source=source, conf_threshold=conf, roi=roi),
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
 
@@ -553,7 +650,8 @@ async def predict_video(
     request: Request,
     background_tasks: BackgroundTasks,
     file: UploadFile = File(..., description="Video file (MP4, AVI, MOV, MKV, WEBM)"),
-    conf_threshold: float = Form(0.5, ge=0.01, le=1.0, description="Detection confidence threshold")
+    conf_threshold: float = Form(0.5, ge=0.01, le=1.0, description="Detection confidence threshold"),
+    roi_preset: Optional[str] = Form(None, description="ROI preset or JSON coordinates")
 ):
     if model is None:
         raise HTTPException(
@@ -639,12 +737,7 @@ async def predict_video(
             v_width = 1280
             v_height = int(v_height * scale)
 
-        video_roi = [
-            (int(v_width * 0.08), int(v_height * 0.25)),
-            (int(v_width * 0.92), int(v_height * 0.25)),
-            (int(v_width * 0.92), int(v_height * 0.85)),
-            (int(v_width * 0.08), int(v_height * 0.85))
-        ]
+        video_roi = resolve_roi_polygon(roi_preset, v_width, v_height)
         video_tracker = BorderIntrusionTracker(roi_polygon=video_roi)
 
         fourcc = cv2.VideoWriter_fourcc(*"mp4v")

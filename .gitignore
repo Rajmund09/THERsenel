@@ -37,5 +37,7 @@ logs/*
 !logs/.gitkeep
 *.log
 
-# OS
+# OS & Office lock files
 .DS_Store
+~$*
+Thumbs.db

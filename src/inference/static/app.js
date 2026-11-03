@@ -53,6 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnLiveStreamToggle = document.getElementById('btn-live-stream-toggle');
     const liveStreamBtnText = document.getElementById('live-stream-btn-text');
     let isLiveStreaming = false;
+    let currentRoiPreset = 'default';
 
     const placeholder = document.getElementById('placeholder');
     const spinner = document.getElementById('spinner');
@@ -243,11 +244,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const paramModeTag = document.getElementById('param-mode-tag');
     const btnNudgeDown = document.getElementById('btn-nudge-down');
     const btnNudgeUp = document.getElementById('btn-nudge-up');
-    const presetBtns = document.querySelectorAll('.btn-preset-3d');
+    const presetBtns = document.querySelectorAll('.param-preset-group:not(.roi-preset-group) .btn-preset-3d[data-preset]');
     const scalePoints = document.querySelectorAll('.scale-point');
 
     function updateParameterDisplay(rawVal) {
         const val = parseFloat(rawVal);
+        if (isNaN(val)) return;
         const formatted = val.toFixed(2);
         
         // 1. Numeric HUD Readout
@@ -389,6 +391,112 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
+
+    // --- 3D RESTRICTED ZONE (ROI) INTERACTIVE CONTROLS ---
+    const roiButtons = document.querySelectorAll('.roi-preset-group button');
+    const roiBadge = document.getElementById('roi-status-badge');
+    const roiSliderLeft = document.getElementById('roi-slider-left');
+    const roiSliderRight = document.getElementById('roi-slider-right');
+    const roiSliderTop = document.getElementById('roi-slider-top');
+    const roiSliderBottom = document.getElementById('roi-slider-bottom');
+    const roiLeftVal = document.getElementById('roi-left-val');
+    const roiRightVal = document.getElementById('roi-right-val');
+    const roiTopVal = document.getElementById('roi-top-val');
+    const roiBottomVal = document.getElementById('roi-bottom-val');
+    const roiCoordsPreview = document.getElementById('roi-coords-preview');
+
+    const roiPresetCoords = {
+        'default': { left: 8, right: 92, top: 28, bottom: 88, label: 'CENTER CORRIDOR' },
+        'road_bottom': { left: 10, right: 90, top: 65, bottom: 95, label: 'ROAD ONLY' },
+        'left_flank': { left: 3, right: 42, top: 25, bottom: 92, label: 'LEFT FLANK' },
+        'right_flank': { left: 58, right: 97, top: 25, bottom: 92, label: 'RIGHT FLANK' },
+        'horizon': { left: 15, right: 85, top: 18, bottom: 45, label: 'DISTANT HORIZON' }
+    };
+
+    function updateRoiSliders(left, right, top, bottom) {
+        if (roiSliderLeft) { roiSliderLeft.value = left; if (roiLeftVal) roiLeftVal.textContent = left; }
+        if (roiSliderRight) { roiSliderRight.value = right; if (roiRightVal) roiRightVal.textContent = right; }
+        if (roiSliderTop) { roiSliderTop.value = top; if (roiTopVal) roiTopVal.textContent = top; }
+        if (roiSliderBottom) { roiSliderBottom.value = bottom; if (roiBottomVal) roiBottomVal.textContent = bottom; }
+        if (roiCoordsPreview) roiCoordsPreview.textContent = `X: ${left}-${right}% | Y: ${top}-${bottom}%`;
+    }
+
+    roiButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            roiButtons.forEach(b => b.classList.remove('is-active'));
+            btn.classList.add('is-active');
+
+            const presetKey = btn.getAttribute('data-roi');
+            currentRoiPreset = presetKey;
+            
+            const presetInfo = roiPresetCoords[presetKey] || roiPresetCoords['default'];
+            if (roiBadge) roiBadge.textContent = presetInfo.label;
+            updateRoiSliders(presetInfo.left, presetInfo.right, presetInfo.top, presetInfo.bottom);
+
+            // Re-trigger scan immediately with new restricted area
+            if (isLiveStreaming) {
+                outputImage.src = `/video_feed?source=sample&conf=${confSlider.value}&roi=${encodeURIComponent(currentRoiPreset)}&t=${Date.now()}`;
+            } else if (lastUploadedFile) {
+                handleFileUpload(lastUploadedFile);
+            }
+        });
+    });
+
+    function handleCustomRoiSliderChange() {
+        if (!roiSliderLeft || !roiSliderRight || !roiSliderTop || !roiSliderBottom) return;
+        let left = parseInt(roiSliderLeft.value, 10);
+        let right = parseInt(roiSliderRight.value, 10);
+        let top = parseInt(roiSliderTop.value, 10);
+        let bottom = parseInt(roiSliderBottom.value, 10);
+
+        // Bounds validation
+        if (left >= right) { left = Math.max(0, right - 6); roiSliderLeft.value = left; }
+        if (top >= bottom) { top = Math.max(0, bottom - 6); roiSliderTop.value = top; }
+
+        if (roiLeftVal) roiLeftVal.textContent = left;
+        if (roiRightVal) roiRightVal.textContent = right;
+        if (roiTopVal) roiTopVal.textContent = top;
+        if (roiBottomVal) roiBottomVal.textContent = bottom;
+        if (roiCoordsPreview) roiCoordsPreview.textContent = `X: ${left}-${right}% | Y: ${top}-${bottom}%`;
+
+        // Mark preset buttons inactive when custom sliders moved
+        roiButtons.forEach(b => b.classList.remove('is-active'));
+        if (roiBadge) roiBadge.textContent = "CUSTOM BOUNDARY";
+
+        // Convert percentages to normalized 0.0-1.0 JSON polygon
+        const pLeft = Math.round(left) / 100.0;
+        const pRight = Math.round(right) / 100.0;
+        const pTop = Math.round(top) / 100.0;
+        const pBottom = Math.round(bottom) / 100.0;
+
+        currentRoiPreset = JSON.stringify([
+            [pLeft, pTop],
+            [pRight, pTop],
+            [pRight, pBottom],
+            [pLeft, pBottom]
+        ]);
+
+        if (isLiveStreaming) {
+            outputImage.src = `/video_feed?source=sample&conf=${confSlider.value}&roi=${encodeURIComponent(currentRoiPreset)}&t=${Date.now()}`;
+        } else if (lastUploadedFile) {
+            handleFileUpload(lastUploadedFile);
+        }
+    }
+
+    [roiSliderLeft, roiSliderRight, roiSliderTop, roiSliderBottom].forEach(slider => {
+        if (slider) {
+            slider.addEventListener('input', () => {
+                if (roiLeftVal && slider === roiSliderLeft) roiLeftVal.textContent = slider.value;
+                if (roiRightVal && slider === roiSliderRight) roiRightVal.textContent = slider.value;
+                if (roiTopVal && slider === roiSliderTop) roiTopVal.textContent = slider.value;
+                if (roiBottomVal && slider === roiSliderBottom) roiBottomVal.textContent = slider.value;
+                if (roiCoordsPreview) roiCoordsPreview.textContent = `X: ${roiSliderLeft.value}-${roiSliderRight.value}% | Y: ${roiSliderTop.value}-${roiSliderBottom.value}%`;
+            });
+            slider.addEventListener('change', handleCustomRoiSliderChange);
+        }
+    });
+
     // Bind Upload Button
     if (initBtn) {
         initBtn.addEventListener('click', (e) => {
@@ -435,6 +543,72 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // Unified Media Dispatcher (Images & Videos)
+
+    // --- INTRUSION DETAILS DOSSIER LOGIC ---
+    const btnToggleIntrusions = document.getElementById('btn-toggle-intrusion-details');
+    const intrusionDrawer = document.getElementById('intrusion-details-drawer');
+    const intrusionItemsList = document.getElementById('intrusion-items-list');
+    const intrusionSummaryBadge = document.getElementById('intrusion-summary-badge');
+    const intrusionBtnLabel = document.getElementById('intrusion-btn-label');
+    const intrusionBtnIcon = document.getElementById('intrusion-btn-icon');
+    let isIntrusionDrawerOpen = false;
+    let currentIntrusionsData = [];
+
+    if (btnToggleIntrusions && intrusionDrawer) {
+        btnToggleIntrusions.addEventListener('click', (e) => {
+            e.stopPropagation();
+            isIntrusionDrawerOpen = !isIntrusionDrawerOpen;
+            if (isIntrusionDrawerOpen) {
+                intrusionDrawer.classList.remove('hidden');
+                if (intrusionBtnLabel) intrusionBtnLabel.textContent = "HIDE DETAILS";
+                if (intrusionBtnIcon) intrusionBtnIcon.style.transform = "rotate(180deg)";
+            } else {
+                intrusionDrawer.classList.add('hidden');
+                if (intrusionBtnLabel) intrusionBtnLabel.textContent = "VIEW DETAILS";
+                if (intrusionBtnIcon) intrusionBtnIcon.style.transform = "rotate(0deg)";
+            }
+        });
+    }
+
+    function renderIntrusionsDossier(intrusions) {
+        currentIntrusionsData = intrusions || [];
+        if (btnToggleIntrusions) {
+            if (currentIntrusionsData.length > 0) {
+                btnToggleIntrusions.style.display = "inline-flex";
+            } else {
+                btnToggleIntrusions.style.display = "none";
+            }
+        }
+        if (!intrusionDrawer || !intrusionItemsList) return;
+
+        if (currentIntrusionsData.length === 0) {
+            intrusionDrawer.classList.add('hidden');
+            isIntrusionDrawerOpen = false;
+            if (intrusionBtnLabel) intrusionBtnLabel.textContent = "VIEW DETAILS";
+            if (intrusionBtnIcon) intrusionBtnIcon.style.transform = "rotate(0deg)";
+            return;
+        }
+
+        // Update badge
+        if (intrusionSummaryBadge) {
+            intrusionSummaryBadge.textContent = `${currentIntrusionsData.length} TARGET${currentIntrusionsData.length > 1 ? 'S' : ''}`;
+        }
+
+        // Render target cards
+        intrusionItemsList.innerHTML = currentIntrusionsData.map(item => `
+            <div style="background: rgba(35, 14, 18, 0.7); border: 1px solid rgba(255, 60, 60, 0.4); border-radius: 6px; padding: 7px 9px; display: flex; flex-direction: column; gap: 3px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700; color: #ff5252;">#${item.id} ${item.class_name}</span>
+                    <span style="font-family: 'JetBrains Mono', monospace; font-size: 9.5px; font-weight: 700; color: #fff; background: rgba(255, 59, 48, 0.35); padding: 1px 5px; border-radius: 3px;">${item.confidence}%</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 8.5px; color: rgba(255, 255, 255, 0.65); font-family: 'JetBrains Mono', monospace;">
+                    <span>${item.location}</span>
+                    <span style="color: #ff8a80; font-weight: 600;">BREACH</span>
+                </div>
+            </div>
+        `).join('');
+    }
+
     function handleFileUpload(file) {
         if (!file) return;
         lastUploadedFile = file;
@@ -517,6 +691,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('conf_threshold', confSlider.value);
+        formData.append('roi_preset', currentRoiPreset);
 
         try {
             const response = await fetch('/predict', {
@@ -553,13 +728,21 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const alertCount = parseInt(response.headers.get("X-Alerts-Count") || "0");
+            const intrusionsRaw = response.headers.get("X-Intrusions-Data");
+            let parsedIntrusions = [];
+            if (intrusionsRaw) {
+                try {
+                    parsedIntrusions = JSON.parse(intrusionsRaw);
+                } catch (e) {
+                    console.warn("Could not parse intrusions header:", e);
+                }
+            }
             
             // Get Image Blob
             const blob = await response.blob();
             const imageUrl = URL.createObjectURL(blob);
 
-            // Brief smoothing delay so processing transition is fluid
-            await new Promise(r => setTimeout(r, 600));
+            // Instant response without artificial delay
 
             // Set image source
             outputImage.src = imageUrl;
@@ -579,10 +762,13 @@ document.addEventListener("DOMContentLoaded", () => {
                             if (btnFullviewTrigger) btnFullviewTrigger.classList.add('is-ready');
                             if (outputExpandHint) outputExpandHint.classList.add('is-visible');
 
+                            renderIntrusionsDossier(parsedIntrusions);
                             if (alertCount > 0) {
                                 alertText.textContent = `${alertCount} INTRUSION(S) DETECTED`;
                                 alertBanner.classList.remove('hidden');
                                 if (tacticalSiren) tacticalSiren.playIntrusionAlert(1.8);
+                            } else {
+                                alertBanner.classList.add('hidden');
                             }
                         },
                         // Done:
@@ -596,10 +782,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (btnFullviewTrigger) btnFullviewTrigger.classList.add('is-ready');
                     if (outputExpandHint) outputExpandHint.classList.add('is-visible');
 
+                    renderIntrusionsDossier(parsedIntrusions);
                     if (alertCount > 0) {
                         alertText.textContent = `${alertCount} INTRUSION(S) DETECTED`;
                         alertBanner.classList.remove('hidden');
                         if (tacticalSiren) tacticalSiren.playIntrusionAlert(1.8);
+                    } else {
+                        alertBanner.classList.add('hidden');
                     }
                 }
             };
@@ -671,6 +860,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('conf_threshold', confSlider ? confSlider.value : 0.5);
+        formData.append('roi_preset', currentRoiPreset);
 
         try {
             const response = await fetch('/predict_video', {

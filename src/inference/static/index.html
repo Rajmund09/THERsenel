@@ -403,6 +403,83 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Parameter Card 02B: Restricted Perimeter Zone Selector -->
+                <div class="data-card parameter-card card-3d-console" id="roi-control-card" style="margin-top: 14px;">
+                    <div class="card-3d-corner tl"></div>
+                    <div class="card-3d-corner tr"></div>
+                    <div class="card-3d-corner bl"></div>
+                    <div class="card-3d-corner br"></div>
+                    <div class="card-header">
+                        <div class="apple-header-title">
+                            <span class="title-text">RESTRICTED ZONE</span>
+                            <span class="index-tag">
+                                <span class="tag-desktop">ZONE // PERIMETER</span>
+                                <span class="tag-mobile">ROI</span>
+                            </span>
+                        </div>
+                        <div class="apple-status-pills">
+                            <span class="apple-pill-blue" id="roi-status-badge" style="font-size: 10px; font-weight: 600;">CENTER CORRIDOR</span>
+                        </div>
+                    </div>
+                    <div class="param-hud-screen" style="padding: 10px 14px;">
+                        <span class="hud-screen-label" style="font-size: 10px; letter-spacing: 0.05em;">VIRTUAL RESTRICTED BOUNDARY</span>
+                        <div class="param-preset-group roi-preset-group" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 8px;">
+                            <button type="button" class="btn-preset-3d is-active" data-roi="default">
+                                <span class="preset-led"></span>
+                                <span>CENTER (DEFAULT)</span>
+                            </button>
+                            <button type="button" class="btn-preset-3d" data-roi="road_bottom">
+                                <span class="preset-led"></span>
+                                <span>ROAD ONLY</span>
+                            </button>
+                            <button type="button" class="btn-preset-3d" data-roi="left_flank">
+                                <span class="preset-led"></span>
+                                <span>LEFT FLANK</span>
+                            </button>
+                            <button type="button" class="btn-preset-3d" data-roi="right_flank">
+                                <span class="preset-led"></span>
+                                <span>RIGHT FLANK</span>
+                            </button>
+                            <button type="button" class="btn-preset-3d" data-roi="horizon" style="grid-column: span 2;">
+                                <span class="preset-led"></span>
+                                <span>DISTANT HORIZON FENCE</span>
+                            </button>
+                        </div>
+
+                        <!-- Interactive Custom Sliders Positioning -->
+                        <div class="roi-custom-sliders" style="margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <span class="hud-screen-label" style="font-size: 9.5px; margin: 0; color: #ff9100;">CUSTOM BOUNDARY (% OF FRAME)</span>
+                                <span id="roi-coords-preview" style="font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #ffb74d;">X: 8-92% | Y: 28-88%</span>
+                            </div>
+                            
+                            <!-- X-Axis (Left & Right) -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 6px;">
+                                <div>
+                                    <label style="font-size: 8.5px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 2px;">LEFT (X1): <span id="roi-left-val">8</span>%</label>
+                                    <input type="range" id="roi-slider-left" min="0" max="60" step="2" value="8" style="width: 100%; accent-color: #ff6b00; height: 4px; cursor: pointer;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 8.5px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 2px;">RIGHT (X2): <span id="roi-right-val">92</span>%</label>
+                                    <input type="range" id="roi-slider-right" min="40" max="100" step="2" value="92" style="width: 100%; accent-color: #ff6b00; height: 4px; cursor: pointer;">
+                                </div>
+                            </div>
+
+                            <!-- Y-Axis (Top & Bottom) -->
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <div>
+                                    <label style="font-size: 8.5px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 2px;">TOP (Y1): <span id="roi-top-val">28</span>%</label>
+                                    <input type="range" id="roi-slider-top" min="5" max="80" step="2" value="28" style="width: 100%; accent-color: #ff6b00; height: 4px; cursor: pointer;">
+                                </div>
+                                <div>
+                                    <label style="font-size: 8.5px; color: rgba(255,255,255,0.7); display: block; margin-bottom: 2px;">BOTTOM (Y2): <span id="roi-bottom-val">88</span>%</label>
+                                    <input type="range" id="roi-slider-bottom" min="20" max="100" step="2" value="88" style="width: 100%; accent-color: #ff6b00; height: 4px; cursor: pointer;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Output Display Card: 3D Master Monitoring Console -->
@@ -456,6 +533,24 @@
                 <div id="alert-banner" class="alert-minimal hidden">
                     <span class="alert-dot"></span>
                     <span id="alert-text" class="tech-text">INTRUSION DETECTED</span>
+                    <button id="btn-toggle-intrusion-details" type="button" style="display: none; margin-left: 10px; background: rgba(255, 107, 0, 0.15); border: 1px solid rgba(255, 107, 0, 0.5); color: #EA580C; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; padding: 2px 8px; border-radius: 999px; cursor: pointer; text-transform: uppercase; font-weight: 700; align-items: center; gap: 4px; transition: all 0.2s ease;">
+                        <span id="intrusion-btn-label">VIEW DETAILS</span>
+                        <svg id="intrusion-btn-icon" viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" style="transition: transform 0.2s ease;"><path d="M6 9l6 6 6-6"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Collapsible Intrusion Details Dossier (Hidden by default) -->
+                <div id="intrusion-details-drawer" class="hidden" style="margin-top: -6px; margin-bottom: 14px; background: rgba(18, 10, 14, 0.88); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 59, 48, 0.35); border-radius: 8px; padding: 12px 14px; color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid rgba(255, 59, 48, 0.2); padding-bottom: 6px;">
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span style="display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #ff3b30; box-shadow: 0 0 8px #ff3b30;"></span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 10.5px; font-weight: 700; color: #ff7b72; letter-spacing: 0.06em;">INTRUSION TARGET DOSSIER</span>
+                        </div>
+                        <span id="intrusion-summary-badge" style="font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: rgba(255, 255, 255, 0.85); background: rgba(255, 59, 48, 0.25); border: 1px solid rgba(255, 59, 48, 0.4); padding: 2px 7px; border-radius: 3px; font-weight: 600;">0 TARGETS</span>
+                    </div>
+                    <div id="intrusion-items-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; max-height: 200px; overflow-y: auto; padding-right: 4px;">
+                        <!-- Dynamically populated intrusion cards -->
+                    </div>
                 </div>
 
                 <!-- Tactical Defense Error & Exception HUD Banner -->
@@ -701,6 +796,6 @@
     <script src="components/liquid-chrome/liquid-chrome.js?v=2"></script>
     <script src="components/cross-dither/cross-dither.js?v=5"></script>
     <script src="tactical-audio.js?v=1"></script>
-    <script src="app.js?v=118"></script>
+    <script src="app.js?v=125"></script>
 </body>
 </html>
