@@ -188,7 +188,6 @@ def safe_model_predict(frame, conf: float):
     Executes accelerated YOLO model prediction with automatic graceful fallback from GPU to CPU
     if device-specific memory or driver exceptions occur.
     """
-    global model
     if model is None:
         raise RuntimeError("YOLO model is not initialized.")
     try:
