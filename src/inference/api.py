@@ -507,21 +507,24 @@ async def stream_frames_generator(source: str = "sample", conf_threshold: float 
 
     try:
         while True:
-            ret, frame = cap.read()
-            if not ret:
-                # If stream/file reached end, loop for continuous live monitoring
-                if isinstance(cap_src, str) and Path(cap_src).exists():
+            t0 = time.perf_counter()
+            frame = None
+
+            if cap.isOpened():
+                ret, frame = cap.read()
+                if not ret and isinstance(cap_src, str) and Path(cap_src).exists():
                     cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
                     ret, frame = cap.read()
-                    if not ret:
-                        await asyncio.sleep(0.04)
-                        continue
-                else:
-                    await asyncio.sleep(0.04)
-                    continue
+
+            # Headless CI fallback or offline camera standby frame
+            if frame is None:
+                frame = np.zeros((480, 640, 3), dtype=np.uint8)
+                cv2.putText(
+                    frame, "RADAR MONITORING // LIVE STANDBY",
+                    (90, 240), cv2.FONT_HERSHEY_SIMPLEX, 0.65, (0, 165, 255), 2
+                )
 
             frame_idx += 1
-            t0 = time.perf_counter()
 
             # Downscale high-res video for smooth web streaming
             h, w = frame.shape[:2]
